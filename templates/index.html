@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{%block title%}index{%endblock%}
+{%block main%}
+<main>
+<div><h3>Recommendations</h3></div>
+<div id="product-container">
+    {% for product in products %}
+    <div class="product-card">
+        <img src="data:image/jpeg;base64,{{ product.product_image }}" alt="Product Image">
+        <h2>{{ product.prod_name }}</h2>
+        <p>{{ product.description }}</p>
+        <p>Price: ${{ product.price }}</p>
+        <button class="card-button">Click me</button>
+    </div>
+    {% endfor %}
+</main>
+{%endblock%}

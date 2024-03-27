@@ -1,0 +1,55 @@
+<div class="form-group">
+  <label for="product-images">Product Images (up to 3):</label>
+  <input type="file" id="product-images" name="product_images[]" accept="image/*" multiple required>
+  <div id="image-preview-container">
+    <div class="image-preview"></div>
+    <div class="image-preview"></div>
+    <div class="image-preview"></div>
+  </div>
+</div>
+<style>
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.image-preview-container {
+  display: flex;
+  flex-wrap: wrap; /* Allows previews to wrap to next line if needed */
+  margin: 10px 0; /* Add some spacing */
+}
+
+.image-preview {
+  width: 100px; /* Adjust width as needed */
+  height: 100px; /* Adjust height as needed */
+  border: 1px solid #ddd; /* Add a border for styling */
+  margin: 5px; /* Add spacing between previews */
+  background-size: cover; /* Ensure image fills the preview area */
+  background-position: center; /* Center image within preview */
+}
+</style>
+<script>
+  document.getElementById('product-images').onchange = function(e) {
+  const previewContainer = document.getElementById('image-preview-container');
+  previewContainer.innerHTML = ''; // Clear previous previews
+
+  for (let i = 0; i < this.files.length; i++) {
+    if (i >= 3) { // Limit to 3 previews
+      alert('You can only upload up to 3 images.');
+      break;
+    }
+    const file = this.files[i];
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const img = document.createElement('img');
+      img.src = event.target.result;
+      const preview = document.createElement('div');
+      preview.classList.add('image-preview');
+      preview.appendChild(img);
+      previewContainer.appendChild(preview);
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+</script>

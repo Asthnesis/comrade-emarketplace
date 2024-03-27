@@ -1,0 +1,42 @@
+{%extends 'base.html'%}
+
+{% block main %}
+
+<div class="profile-container">
+    <div class="profile-navbar">
+        <h3>Name: {{ first_name }}</h3>
+        <p>Email: {{ email}}</p>
+        <hr>
+        <a href="#" onclick="showSection('profile-account-info')">Account Info</a>
+        <a href="#" onclick="showSection('profile-change-password')">Orders</a>
+        <a href="#" onclick="showSection('profile-logout')">Log out</a>
+    </div>
+
+    <div class="profile-sections">
+        <div class="profile-account-info show">
+            <h2>Account Info</h2>
+            <div class="info-details">
+                <p>First Name: <span>{{ first_name }}</span></p>
+                <p>Last Name: <span>{{ last_name}}</span></p>
+                <!-- <p>Role ID: <span>{{ seller_id}}</span></p> -->
+                <p>ID: <span>{{ user_id }}</span></p>
+                <p>Email Address: <span>{{ email}}</span></p>
+                <label for="phone">Phone Number:</label>
+                <input type="text" id="phone" name="phone" placeholder="Enter your phone number">
+            </div>
+            <button type="button">Save</button>
+        </div>
+        <div class="profile-change-password">
+            <h2>Orders</h2>
+            <p>List of Orders</p>
+        </div>
+        <div class="profile-logout">
+            <h2>Log out</h2>
+            <p>Are you sure you want to log out?</p>
+            <a href="{{url_for('logout')}}"><button type="button">Log out</button></a>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

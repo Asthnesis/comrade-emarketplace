@@ -1,0 +1,27 @@
+{%extends 'base.html'%}
+{%block title%}Welcome seller{%endblock%}
+
+{%block main%}
+<div class="register-container">
+  <img class="register-img" src="{{url_for('static',filename='images/login_image.png')}}" alt="logo">
+  <div class="register-form-content">
+      <h2>Create your account</h2>
+      <form onsubmit="return validateForm()" class="register-form">
+      <input type="email" id="email" name="email" placeholder="Email Address">
+      <label for="password">Password</label>
+      <div class="password-container">
+          <input type="password" id="password" name="password" placeholder="Password">
+          <i class="fas fa-eye" id="togglePassword"></i>
+      </div>
+      <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm Password">
+      <p><button id="continue-button"><a href="#" id="continue-button">Continue</a></button></p>
+      <p>Already a seller? <a href="{{url_for('seller_login')}}">LOGIN</a></p>
+      <div class="button-container">
+        <a href="{{url_for('seller_register_callback')}}">
+          <button id="register-google-button" type="button">Continue with Google</button>
+        </a>
+      </div>
+      </form>
+  </div>
+</div>
+{%endblock%}

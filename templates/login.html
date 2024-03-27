@@ -1,0 +1,45 @@
+{%extends 'base.html'%}
+{%block title%}login{%endblock%}
+{%block main%}
+<main>
+    <div class="container">
+        <img src="{{url_for('static',filename='images/login_image.png')}}" alt="logo">
+        <div class="form-content">
+            <h2>Welcome back</h2>
+            <form method="post"  onsubmit="return validateForm()" class="form">
+            <input type="email" id="email" name="email" placeholder="Email Address">
+            <p><button id="continue-button"><a href="{{url_for('login')}}" id="continue-button">Continue</a></button></p>
+            </form>
+            <h3>Dont have an account?</h3>
+            <a href="{{url_for('register')}}">Sign up</a>
+            <p><hr>OR</hr></p>
+            <p><button id="google-button"><a href="{{url_for('callback')}}" ><i class="bi bi-google"></i>Continue with Google</a></button></p>
+        </div>
+    </div>
+</main>
+{%endblock%}
+
+<script>
+    function validateForm() {
+        var emailField = document.getElementById("username");
+        var emailError = document.getElementById("emailError");
+        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(emailField.value)) {
+            emailError.textContent = "Please enter a valid email address.";
+            return false;
+        } else {
+            emailError.textContent = "";
+            return true;
+        }
+    }
+    
+    function togglePassword() {
+        var passwordField = document.getElementById("password");
+        if (passwordField.type === "password") {
+            passwordField.type = "text";
+        } else {
+            passwordField.type = "password";
+        }
+    }
+    
+</script>
