@@ -1,55 +1,57 @@
-<div class="form-group">
-  <label for="product-images">Product Images (up to 3):</label>
-  <input type="file" id="product-images" name="product_images[]" accept="image/*" multiple required>
-  <div id="image-preview-container">
-    <div class="image-preview"></div>
-    <div class="image-preview"></div>
-    <div class="image-preview"></div>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Product Cards</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="product-container">
+    {% for product in products %}
+      <div class="product-card">
+        <img src="data:image/jpeg;base64,{{ product.product_image }}" alt="Product Image">
+        <a href="#"><h6>{{product.seller_id}}</h4></a>
+        <h2>{{ product.prod_name }}</h2>
+        <p>Price: ${{ product.price }}</p>
+        <div class="product-actions">
+          <button class="cart-btn" data-product-id="{{ product.id }}">
+            <i class="bi-cart-fill me-1"></i> Cart (<span class="cart-count">0</span>)
+          </button>
+          <button class="favorite-btn" data-product-id="{{ product.id }}">
+            <i class="bi bi-heart-fill me-1"></i> Favorite (<span class="favorite-count">0</span>)
+          </button>
+        </div>
+        <button class="card-button">View More details</button>
+      </div>
+    {% endfor %}
   </div>
-</div>
-<style>
-.form-group {
-  display: flex;
-  flex-direction: column;
-}
 
-.image-preview-container {
-  display: flex;
-  flex-wrap: wrap; /* Allows previews to wrap to next line if needed */
-  margin: 10px 0; /* Add some spacing */
-}
+  <script>
+    const cartBtns = document.querySelectorAll('.cart-btn');
+    const favoriteBtns = document.querySelectorAll('.favorite-btn');
 
-.image-preview {
-  width: 100px; /* Adjust width as needed */
-  height: 100px; /* Adjust height as needed */
-  border: 1px solid #ddd; /* Add a border for styling */
-  margin: 5px; /* Add spacing between previews */
-  background-size: cover; /* Ensure image fills the preview area */
-  background-position: center; /* Center image within preview */
-}
-</style>
-<script>
-  document.getElementById('product-images').onchange = function(e) {
-  const previewContainer = document.getElementById('image-preview-container');
-  previewContainer.innerHTML = ''; // Clear previous previews
+    cartBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const productId = btn.dataset.productId;
+        // Simulate adding to cart (replace with actual logic)
+        let currentCartCount = parseInt(btn.querySelector('.cart-count').textContent, 10);
+        currentCartCount++;
+        btn.querySelector('.cart-count').textContent = currentCartCount;
 
-  for (let i = 0; i < this.files.length; i++) {
-    if (i >= 3) { // Limit to 3 previews
-      alert('You can only upload up to 3 images.');
-      break;
-    }
-    const file = this.files[i];
-    const reader = new FileReader();
-    reader.onload = function(event) {
-      const img = document.createElement('img');
-      img.src = event.target.result;
-      const preview = document.createElement('div');
-      preview.classList.add('image-preview');
-      preview.appendChild(img);
-      previewContainer.appendChild(preview);
-    };
-    reader.readAsDataURL(file);
-  }
-};
+        // Consider sending AJAX request to a server-side cart adding route if needed
+      });
+    });
 
-</script>
+    favoriteBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const productId = btn.dataset.productId;
+        // Simulate adding to favorites (replace with actual logic)
+        let currentFavoriteCount = parseInt(btn.querySelector('.favorite-count').textContent, 10);
+        currentFavoriteCount++;
+        btn.querySelector('.favorite-count').textContent = currentFavoriteCount;
+
+        // Consider sending AJAX request to a server-side favorites adding route if needed
+      });
+    });
+  </script>
+</body>
+</html>

@@ -35,15 +35,15 @@
 
             <a href="{{ url_for('seller_register') }}">Seller?</a>
 
-            <a href="#"><button class="nav-btn" type="submit">
+            <a href="{{url_for('favourites')}}"><button class="nav-btn" type="submit">
                     <i class="bi bi-heart-fill me-1"></i>
-                    Favourites
+                    favourites
                     <span class="badge bg-dark text-white ms-1 rounded-pill">0</span>
            </button> </a>
-            <a href=""><button class="nav-btn" type="submit">
+            <a href="{{url_for('cart')}}"><button class="nav-btn" type="submit">
                     <i class="bi-cart-fill me-1"></i>
-                    Cart
-                    <span class="badge bg-dark text-white ms-1 rounded-pill">0</span>
+                    cart
+                    <span id="cart-count" class="badge bg-dark text-white ms-1 rounded-pill">0</span>
            </button> </a>
             <a href="{{ url_for('profile') }}"> <button class="nav-profile" type="submit">
                     <i class="bi bi-person-circle me-1"></i>
@@ -96,6 +96,16 @@
         </div>
     </footer>
 </body>
-<script src="{{url_for('static', filename='js/scripts.js')}}"></script>
+<script src="{{url_for('static', filename='js/scripts.js')}}">
+const cartCountSpan = document.getElementById('cart-count');
+
+// Simulate adding an item to the cart (replace with your actual logic)
+document.querySelector('.nav-btn').addEventListener('click', () => {
+  let currentCount = parseInt(cartCountSpan.textContent, 10);
+  currentCount++;
+  cartCountSpan.textContent = currentCount;
+});
+
+</script>
 
 </html>

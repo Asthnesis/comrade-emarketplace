@@ -6,7 +6,7 @@ from werkzeug.utils import secure_filename
 import os
 from flask import Flask, render_template, url_for, request, redirect, session, jsonify, flash
 from authlib.integrations.flask_client import OAuth
-import sqlite3
+import pymysql
 from db import *
 import base64
 import requests
@@ -26,7 +26,38 @@ connection = pymysql.connect(host='localhost',
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT p.*, pi.product_image FROM product p LEFT JOIN product_images pi ON p.product_id = pi.product_id"
+            cursor.execute(sql)
+            products = cursor.fetchall()
+            for product in products:
+                if product['product_image'] is not None:
+                    product['product_image'] = base64.b64encode(
+                        product['product_image']).decode('utf-8')
+            return render_template('index.html', products=products)
+    except pymysql.Error as e:
+        print("Error fetching product from database", e)
+        return []
+
+
+@app.route('/product_card/<string:product_id>', methods=['GET'])
+def product_card(product_id):
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT p.*, pi.product_image FROM product p LEFT JOIN product_images pi ON p.product_id = pi.product_id WHERE p.product_id = %s"
+            cursor.execute(sql, (product_id,))
+            product = cursor.fetchone()
+            if product:
+                if product['product_image'] is not None:
+                    product['product_image'] = base64.b64encode(
+                        product['product_image']).decode('utf-8')
+                return render_template('product_card.html', product=product)
+            else:
+                return "Product not found", 404
+    except pymysql.Error as e:
+        print("Error fetching product from database", e)
+        return "An error occurred while fetching the product", 500
 
 
 @app.route('/register')
@@ -100,6 +131,17 @@ def seller_dashboard():
         return render_template('seller_dashboard.html')
     else:
         return redirect(url_for('seller_login'))
+
+
+@app.route('/favourites')
+def favourites():
+    return render_template('favourites.html')
+
+
+@app.route('/cart')
+def cart():
+    session['cart_count'] += 1
+    return render_template('cart.html'), 204
 
 
 # Google O-auth
@@ -488,3 +530,49 @@ def add_product():
             return redirect(url_for('seller_dashboard'))
     else:
         return 'Method not allowed'
+
+
+@app.route('/seller_dashboard/manage_products', methods=['GET', 'POST'])
+def manage_products():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    seller_id = session['seller_id']
+    if request.method == 'GET':
+        products = fetch_product_data_from_database(seller_id)
+        for product in products:
+            if product['product_image'] is not None:
+                product['product_image'] = base64.b64encode(
+                    product['product_image']).decode('utf-8')
+        return render_template('seller_dashboard.html', products=products)
+    elif request.method == 'POST':
+        if request.form.get('action') == 'delete':
+            product_id = request.form.get('product_id')
+            delete_product_from_database(product_id)
+        elif request.form.get('action') == 'edit':
+            pass
+
+
+def fetch_product_data_from_database(seller_id):
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT p.*, pi.product_image FROM product p LEFT JOIN product_images pi ON p.product_id = pi.product_id WHERE p.seller_id = %s"
+            cursor.execute(sql, (seller_id,))
+            products = cursor.fetchall()
+        return products
+    except pymysql.Error as e:
+        print("Error fetching product from database", e)
+        return []
+
+
+def delete_product_from_database(product_id):
+    try:
+        with connection.cursor() as cursor:
+            sql = "DELETE FROM product WHERE product_id = %s"
+            cursor.execute(sql, (product_id,))
+            connection.commit()
+    except pymysql.Error as e:
+        print("Error deleting product from the database:", e)
+        flash("An error occurred while deleting the product. Please try again.", "error")
+    finally:
+        connection.close()
+    return redirect(url_for('manage_products'))

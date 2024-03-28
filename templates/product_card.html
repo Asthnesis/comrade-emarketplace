@@ -1,0 +1,12 @@
+{%extends 'base.html'%}
+{%block title%}User profile{% endblock %}
+{% block main %}
+<div class="product-card">
+    <img src="data:image/jpeg;base64,{{ product.product_image }}" alt="Product Image">
+    <h2>{{ product.prod_name }}</h2>
+    <p>{{ product.description }}</p>
+    <p>Price: Ksh. {{ product.price }}</p>
+    <!-- Add any additional details here -->
+</div>
+
+{%endblock%}

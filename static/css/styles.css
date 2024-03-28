@@ -112,14 +112,26 @@ nav ul {
   border: 2px solid green;
   text-align: center;
 }
-
 .nav-btn {
   text-align: center;
   height: 80px;
   width: 80px;
   border-radius: 50%;
   border: 2px solid green;
+  position: relative;
 }
+
+.badge {
+  padding-left: 9px;
+  padding-right: 9px;
+  border-radius: 9px;
+  background-color: #c67605;
+  color: #fff;
+  position: absolute;
+  top: -5px; /* Adjust top position for desired placement */
+  left: -5px; /* Adjust left position for desired placement */
+}
+
 .nav-profile {
   text-align: center;
   height: 80px;
@@ -174,14 +186,23 @@ footer {
 
 .product-card img {
   width: 100%;
-  height: auto;
+  height: 230px;
   border-radius: 5px;
+}
+.product-card h6 {
+  text-align: center;
 }
 
 .product-card h2 {
   font-size: 16px;
   margin-top: 10px;
   margin-bottom: 5px;
+}
+.product-card button {
+  height: 25px;
+  color: #fff;
+  background-color: #74cdbd;
+  cursor: pointer;
 }
 
 .product-card p {
