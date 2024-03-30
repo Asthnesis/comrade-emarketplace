@@ -19,23 +19,23 @@ function myFunction() {
   // Get the current URL path
 const path = window.location.pathname.split('/').filter(element => element !== '');
 
-// Create a function to generate the breadcrumb
-function generateBreadcrumb(path) {
-  const breadcrumbContainer = document.getElementById('breadcrumb');
-  let breadcrumbHTML = `<li><a href="/">Home</a></li>`; // Start with the Home link
+// // Create a function to generate the breadcrumb
+// function generateBreadcrumb(path) {
+//   const breadcrumbContainer = document.getElementById('breadcrumb');
+//   let breadcrumbHTML = `<li><a href="/">Home</a></li>`; // Start with the Home link
 
-  // Build the breadcrumb HTML
-  path.forEach((segment, index) => {
-    const url = `/${path.slice(0, index + 1).join('/')}`;
-    breadcrumbHTML += `<li><a href="${url}">${segment}</a></li>`;
-  });
+//   // Build the breadcrumb HTML
+//   path.forEach((segment, index) => {
+//     const url = `/${path.slice(0, index + 1).join('/')}`;
+//     breadcrumbHTML += `<li><a href="${url}">${segment}</a></li>`;
+//   });
 
-  // Set the breadcrumb HTML
-  breadcrumbContainer.innerHTML = breadcrumbHTML;
-}
+//   // Set the breadcrumb HTML
+//   breadcrumbContainer.innerHTML = breadcrumbHTML;
+// }
 
-// Call the function on page load
-generateBreadcrumb(path);
+// // Call the function on page load
+// generateBreadcrumb(path);
 
 function toggleAccountInfo() {
   var form = document.getElementById("account-info-form");
@@ -99,3 +99,55 @@ function showSection(sectionName) {
   document.querySelector('.' + sectionName).classList.add('show');
 }
 
+    const cartBtns = document.querySelectorAll('.cart-btn');
+    const favoriteBtns = document.querySelectorAll('.favorite-btn');
+
+    cartBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const productId = btn.dataset.productId;
+
+        fetch('/cart', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ productId })
+        });
+      });
+    });
+
+    favoriteBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const productId = btn.dataset.productId;
+
+        fetch('/favourites', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ productId })
+        });
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Fetch the cart count and update the placeholder element
+      fetch('/get_cart_count')
+          .then(response => {
+              if (!response.ok) {
+                  throw new Error('Failed to fetch cart count');
+              }
+              return response.json();
+          })
+          .then(data => {
+              const cartCountElement = document.getElementById('cart-count');
+              if (cartCountElement) {
+                  cartCountElement.textContent = data.cart_count;
+              } else {
+                  console.error('Cart count element not found');
+              }
+          })
+          .catch(error => {
+              console.error('Error fetching cart count:', error);
+          });
+  });

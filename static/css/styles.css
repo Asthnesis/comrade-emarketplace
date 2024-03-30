@@ -1,18 +1,24 @@
+/* Default styles */
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400&display=swap");
+
+/* Common styles */
 a {
   text-decoration: none;
 }
+
 html {
   background: white;
   margin: auto;
   width: auto;
   align-items: center;
 }
+
 body {
   background: white;
   display: flex;
   flex-direction: column;
 }
+
 header {
   display: flex;
   height: 150px;
@@ -24,10 +30,12 @@ header {
   border-radius: 20px;
   box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
+
 header img {
   height: 120px;
   width: auto;
 }
+
 nav {
   display: flex;
   justify-content: space-between;
@@ -38,15 +46,17 @@ nav {
   padding: 20px;
   width: 75%;
 }
+
 #dropdown {
   list-style-type: none;
 }
+
 nav ul {
   list-style-type: none;
   display: none;
 }
 
-/*All categories dropdown*/
+/* All categories dropdown */
 .dropdown {
   background-color: #fdfdfd;
   color: #000000;
@@ -85,6 +95,7 @@ nav ul {
   padding: 12px 16px;
   text-decoration: none;
 }
+
 /* Links inside the dropdown */
 .dropdown-content a {
   display: block;
@@ -98,7 +109,7 @@ nav ul {
   background-color: #ddd;
 }
 
-/*Show the dropdown menu using js*/
+/* Show the dropdown menu using js */
 .show {
   display: block;
 }
@@ -112,6 +123,7 @@ nav ul {
   border: 2px solid green;
   text-align: center;
 }
+
 .nav-btn {
   text-align: center;
   height: 80px;
@@ -138,10 +150,12 @@ nav ul {
   width: 80px;
   border-radius: 50%;
 }
+
 .nav-profile:hover {
   background-color: #607d8b;
   cursor: pointer;
 }
+
 .nav-btn:hover {
   background-color: #18ffff;
   cursor: pointer;
@@ -161,10 +175,12 @@ footer {
   padding-top: 20px;
   margin: 40px;
 }
+
 .footer-container {
   display: flex;
   flex-direction: row;
 }
+
 .footer-container li {
   list-style-type: none;
 }
@@ -189,6 +205,7 @@ footer {
   height: 230px;
   border-radius: 5px;
 }
+
 .product-card h6 {
   text-align: center;
 }
@@ -198,17 +215,20 @@ footer {
   margin-top: 10px;
   margin-bottom: 5px;
 }
+
 .product-card button {
   height: 25px;
   color: #fff;
   background-color: #74cdbd;
   cursor: pointer;
+  margin: 20px;
 }
 
 .product-card p {
   font-size: 14px;
   margin: 5px 0;
 }
+
 .container {
   display: flex;
   justify-content: space-between;
@@ -246,6 +266,72 @@ h1 {
   border: none;
   border-radius: 3px;
   cursor: pointer;
+}
+
+.form-content > body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.product-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.product-wrapper {
+  width: 500px;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.product-image {
+  height: 250px;
+  margin-bottom: 15px;
+}
+
+.product-title {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.price-section {
+  margin-bottom: 15px;
+}
+
+.product-description,
+.seller-information,
+.product-location {
+  margin-bottom: 20px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px; /* Adjust padding as needed */
+}
+
+.product-description h3,
+.seller-information h3,
+.product-location h3 {
+  margin-bottom: 5px;
+}
+
+.add-to-cart,
+.show-phone-number {
+  padding: 8px 15px; /* Adjust padding as needed */
+  background-color: #4caf50; /* Green color for buttons */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 10px; /* Add spacing between buttons */
+}
+
+.show-phone-number {
+  background-color: #ddd; /* Gray color for phone number button */
 }
 
 .form-content a {
@@ -340,6 +426,7 @@ h1 {
   color: black;
   text-decoration: none;
 }
+
 .profile-container {
   display: flex;
   justify-content: center;
@@ -435,4 +522,38 @@ button[type="button"] {
 .other-sections p {
   margin-bottom: 10px;
   color: #ccc;
+}
+
+/* Media Queries for responsiveness */
+
+/* For screens smaller than 600px */
+@media (max-width: 600px) {
+  header {
+    height: auto;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  header img {
+    margin-bottom: 10px;
+  }
+
+  nav {
+    width: 100%;
+  }
+
+  .container {
+    width: 100%;
+    padding: 20px;
+  }
+
+  .register-container {
+    width: 100%;
+    padding: 20px;
+  }
+
+  .profile-container {
+    width: 100%;
+    padding: 20px;
+  }
 }

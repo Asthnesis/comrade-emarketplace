@@ -1,12 +1,163 @@
 {%extends 'base.html'%}
-{%block title%}User profile{% endblock %}
+{%block title%}Product details{% endblock %}
 {% block main %}
-<div class="product-card">
-    <img src="data:image/jpeg;base64,{{ product.product_image }}" alt="Product Image">
-    <h2>{{ product.prod_name }}</h2>
-    <p>{{ product.description }}</p>
-    <p>Price: Ksh. {{ product.price }}</p>
-    <!-- Add any additional details here -->
-</div>
+<style>
+  .alert {
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+}
 
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+</style>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+    {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+{% endwith %}
+<main>
+    <div class="product-container">
+      <div class="product-wrapper">
+        <img class="product-image" src="data:image/jpeg;base64,{{ product.product_image }}" alt="Product image">
+        <div class="product-details">
+          <h2 class="product-title">{{ product.prod_name }}</h2>
+          <div class="price-section">
+            <p>Price: Ksh:{{product.price}}</p>
+            <p>Quantity: {{product.available_units}}</p>
+          </div>
+          <div class="product-actions">
+            <button class="add-to-cart favourite-btn" data-product-id="{{ product.product_id }}">Mark as favourite</button>
+            <button class="add-to-cart cart-btn" data-product-id="{{ product.product_id }}">Add To Cart</button>
+          </div>
+          <div class="product-description">
+            <h3>Description</h3>
+            {{product.description}}
+          </div>
+          <div class="seller-information">
+            <h3>Seller</h3>
+            <p>Seller id: {{product.seller_id}}</p>
+            <button class="show-phone-number">Phone: {{product.phone}}</button>
+          </div>
+          <div class="product-location">
+            <h3>Location</h3>
+            <p>{{product.address}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script>
+    // JavaScript for handling flashed messages
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all flashed message elements
+    var flashedMessages = document.querySelectorAll('.flashed-message');
+
+    // Loop through each flashed message element
+    flashedMessages.forEach(function(message) {
+        // Add event listener to close the message when clicked
+        message.addEventListener('click', function() {
+            message.style.display = 'none'; // Hide the message
+        });
+
+        // Automatically hide the message after a certain period (e.g., 5 seconds)
+        setTimeout(function() {
+            message.style.display = 'none'; // Hide the message
+        }, 5000); // Adjust the timeout value as needed
+    });
+});
+
+    // Add event listeners for Add to Cart and Mark as Favourite buttons
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.cart-btn').forEach(function(button) {
+            button.addEventListener('click', function(event) {
+                event.preventDefault();
+                var productId = button.getAttribute('data-product-id');
+                addToCart(productId);
+            });
+        });
+
+        document.querySelectorAll('.favourite-btn').forEach(function(button) {
+            button.addEventListener('click', function(event) {
+                event.preventDefault();
+                var productId = button.getAttribute('data-product-id');
+                addToFavorites(productId);
+            });
+        });
+    });
+
+    // Function to handle adding product to cart
+    function addToCart(productId) {
+        fetch('/add_to_cart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                product_id: productId
+            })
+        }).then(response => {
+            if (response.ok) {
+                // If successful, display success message
+                showAlertMessage('Product added to cart successfully.', 'success');
+            } else {
+                // If error, display error message
+                showAlertMessage('Failed to add product to cart.', 'error');
+            }
+        }).catch(error => {
+            console.error('Error:', error);
+            showAlertMessage('An error occurred while adding product to cart.', 'error');
+        });
+    }
+
+    // Function to handle adding product to favourites
+    function addToFavorites(productId) {
+        fetch('/add_to_favourites', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                product_id: productId
+            })
+        }).then(response => {
+            if (response.ok) {
+                // If successful, display success message
+                showAlertMessage('Product added to favourites successfully.', 'success');
+            } else {
+                // If error, display error message
+                showAlertMessage('Failed to add product to favourites.', 'error');
+            }
+        }).catch(error => {
+            console.error('Error:', error);
+            showAlertMessage('An error occurred while adding product to favourites.', 'error');
+        });
+    }
+
+    // Function to show alert messages dynamically
+    function showAlertMessage(message, type) {
+        var alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-' + type;
+        alertDiv.textContent = message;
+        document.body.appendChild(alertDiv);
+
+        // Remove the alert after a certain time
+        setTimeout(function() {
+            alertDiv.remove();
+        }, 3000);
+    }
+</script>
 {%endblock%}

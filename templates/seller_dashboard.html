@@ -133,7 +133,7 @@
       <h2>VENDOR CENTER</h2>
       <a href="#orders">Orders</a>
       <a href="#products">Products</a>
-        <a href="#manage-products">Manage Products</a>
+        <a name="manage-products" href="#manage-products">Manage Products</a>
         <a href="#add-products">Add Products</a>
       <a href="#statements">Account Statements</a>
     </aside>
@@ -445,6 +445,18 @@ function saveProduct(button) {
     button.innerHTML = 'Edit';
     button.setAttribute('onclick', 'editProduct(this)');
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelector('a[href="#manage-products"]').addEventListener('click', function(event) {
+        event.preventDefault(); // Prevent default behavior of anchor link
+        var manageProductsSection = document.getElementById('manage-products');
+        if (manageProductsSection) {
+            manageProductsSection.scrollIntoView({ behavior: 'smooth' }); // Scroll to the section
+        }
+    });
+});
+
+
 
       </script>
     </html>

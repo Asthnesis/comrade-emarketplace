@@ -1,293 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Buyer Dashboard</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
 </head>
 <style>
-    body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
+    .cart-container {
+    width: 80%;
+    margin: auto;
 }
 
-.container {
-  display: flex;
-  width: 100%;
-  min-height: 100vh;
+.cart-header, .cart-summary {
+    background-color: #f0f0f0;
+    padding: 10px;
+    text-align: center;
 }
 
-.sidebar {
-  background-color: #f2f2f2; /* Light gray for sidebar */
-  color: #333; /* Dark gray for text */
-  padding: 20px;
-  width: 200px;
-  height: 100vh;
+.cart-item {
+    display: flex;
+    border-bottom: 1px solid #ccc;
+    padding: 10px;
+    align-items: center;
 }
 
-.sidebar h2 {
-  margin-top: 0;
-  margin-bottom: 20px;
-  text-align: center;
+.item-details {
+    margin-left: 20px;
 }
 
-.sidebar a {
-  color: #333; /* Dark gray for text */
-  text-decoration: none;
-  display: block;
-  padding: 10px;
-  transition: background-color 0.2s ease-in-out;
+.remove-button, .checkout-button {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
 }
 
-.sidebar a.active {
-  background-color: #666; /* Maintains dark gray for active link */
+.remove-button {
+    margin-top: 10px;
 }
 
-.sidebar a:hover {
-  background-color: #fff; /* White on hover */
-}
-
-.content {
-  flex: 1;
-  padding: 20px;
-  background-color: #fff; /* White background for content area */
-}
-
-.content h2 {
-  color: #333;
-  margin-bottom: 20px;
-}
-
-.content table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
-}
-
-.content table th, .content table td {
-  border: 1px solid #ddd;
-  padding: 10px;
-}
-
-.content button {
-  background-color: orange;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  margin: 5px;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
-}
-
-.content button:hover {
-  background-color: #e69500;
-}
-
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-}
-
-.form-group textarea {
-  height: 100px;
+.checkout-button {
+    width: 100%;
+    box-sizing: border-box;
 }
 
 </style>
 <body>
-
-  <div class="container">
-    <aside class="sidebar">
-      <h2>BUYER DASHBOARD</h2>
-      <a href="#orders" class="active">Orders</a>
-      <a href="#products">Products</a>
-      <a href="#manage-products">Manage Products</a>
-      <a href="#add-products">Add Products</a>
-      <a href="#statements">Account Statements</a>
-    </aside>
-
-    <div class="content">
-
-      <section id="orders" class="section">
-        <h2>Orders</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Image</th>
-              <th>Product ID</th>
-              <th>Name</th>
-              <th>Condition</th>
-              <th>Description</th>
-              <th>Available Units</th>
-              <th>Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><img src="product_image.jpg" alt="Product Image"></td>
-              <td>1234</td>
-              <td>Product Name</td>
-              <td>New</td>
-              <td>Detailed product description</td>
-              <td>10</td>
-              <td>$25.00</td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
-
-      <section id="products" class="section">
-        <h2>Products</h2>
-        <ul>
-          <li>Product Name (ID: 1234) - New</li>
-          <li>Another Product (ID: 5678) - Used</li>
-        </ul>
-      </section>
-
-      <section id="manage-products" class="section">
-        <h2>Manage Products</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Image</th>
-              <th>Product ID</th>
-              <th>Name</th>
-              <th>Condition</th>
-              <th>Description</th>
-              <th>Available Units</th>
-              <th>Price</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><img src="product_image.jpg" alt="Product Image"></td>
-              <td>1234</td>
-              <td>Product Name</td>
-              <td>New</td>
-              <td>Detailed product description</td>
-              <td>10</td>
-              <td>$25.00</td>
-              <td><button>Delete</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
-
-      <section id="add-products" class="section">
-        <h2>Add Products</h2>
-        <form action="#">
-          <div class="form-group">
-            <label for="product-name">Product Name:</label>
-            <input type="text" id="product-name" name="product_name" required>
-          </div>
-          <div class="form-group">
-            <label for="category">Category:</label>
-            <select name="category" id="category">
-              <option value="">Select Category</option>
-              <option value="electronics">Electronics</option>
-              <option value="clothing">Clothing</option>
-              </select>
-          </div>
-          <div class="form-group">
-            <label for="sub-category">Subcategory:</label>
-            <input type="text" id="sub-category" name="sub_category" required>
-          </div>
-          <div class="form-group">
-            <label for="product-images">Product Images (up to 3):</label>
-            <input type="file" id="product-images" name="product_images[]" multiple required>
-          </div>
-          <div class="form-group">
-            <label for="price">Price:</label>
-            <input type="number" id="price" name="price" step="0.01" required>
-          </div>
-          <div class="form-group">
-            <label for="description">Description:</label>
-            <textarea name="description" id="description" rows="5" required></textarea>
-          </div>
-          <div class="form-group">
-            <label for="condition">Condition:</label>
-            <select name="condition" id="condition" required>
-                <option value="new">New</option>
-                <option value="used">Used</option>
-                <option value="refurbished">Refurbished</option>
-              </select>
-              </div>
-              <div class="form-group">
-              <label for="units">Available Units:</label>
-              <input type="number" id="units" name="units" min="1" required>
-              </div>
-              <button type="submit">Add Product</button>
-              </form>
-              </section>
-              <section id="statements" class="section">
-                <h2>Account Statements</h2>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Payment ID</th>
-                      <th>Amount</th>
-                      <th>Payment Date</th>
-                      <th>Payer ID</th>
-                      <th>Receiver ID</th>
-                      <th>Payment Method</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>123456</td>
-                      <td>$25.00</td>
-                      <td>2024-03-26</td>
-                      <td>VENDOR123</td>
-                      <td>CUSTOMER456</td>
-                      <td>Credit Card</td>
-                      <td>Completed</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </section>
-        
+    <div class="cart-container">
+        <div class="cart-header">
+            <h2>Cart (3)</h2>
+        </div>
+        <div class="cart-item">
+            <img src="smartwatch.jpg" alt="Smartwatch">
+            <div class="item-details">
+                <p class="item-name">Smartwatch Business Bluetooth Waterproof Sport</p>
+                <p class="item-seller">Seller: JC-Hom</p>
+                <p class="item-status">In Stock</p>
+                <button class="remove-button">REMOVE</button>
             </div>
-          </div>
-        
-        </body>
-        <script>
-            const sections = document.querySelectorAll('.section');
-        
-            sections.forEach(section => {
-              const sectionHeading = section.querySelector('h2');
-        
-              sectionHeading.addEventListener('click', () => {
-                if (section.id === 'orders') {
-                  // Toggle active class for the clicked section
-                  section.classList.toggle('active');
-                } else {
-                  // Collapse other sections except the clicked one
-                  sections.forEach(otherSection => {
-                    if (otherSection !== section) {
-                      otherSection.classList.remove('active');
-                    }
-                  });
-                }
-              });
-            });
-          </script>
-        
-        </html>
-        
+        </div>
+        <div class="cart-summary">
+            <h3>CART SUMMARY</h3>
+            <p class="subtotal">Subtotal KSh 1,779</p>
+            <p class="delivery-info">Delivery fees not included yet</p>
+            <button class="checkout-button">CHECKOUT (KSh 1,779)</button>
+        </div>
+    </div>
+    
+</body>
+</html>

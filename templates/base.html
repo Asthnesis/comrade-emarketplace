@@ -13,7 +13,7 @@
 
 <body>
     <header>
-        <a href="{{url_for('index')}}"><img src="{{url_for('static',filename='images/logo.png')}}" alt="logo"></a>
+        <a href="{{url_for('index')}}"><img src="{{url_for('static',filename='images/logo.jpg')}}" alt="logo"></a>
         <nav>
             <li id="dropdown">
                 <a onclick="myFunction()" class="dropdown" href="#!">All categories <i
@@ -43,7 +43,7 @@
             <a href="{{url_for('cart')}}"><button class="nav-btn" type="submit">
                     <i class="bi-cart-fill me-1"></i>
                     cart
-                    <span id="cart-count" class="badge bg-dark text-white ms-1 rounded-pill">0</span>
+                    <span id="cart-count" class="badge bg-dark text-white ms-1 rounded-pill">{{ cart_count }}</span>
            </button> </a>
             <a href="{{ url_for('profile') }}"> <button class="nav-profile" type="submit">
                     <i class="bi bi-person-circle me-1"></i>
@@ -96,16 +96,6 @@
         </div>
     </footer>
 </body>
-<script src="{{url_for('static', filename='js/scripts.js')}}">
-const cartCountSpan = document.getElementById('cart-count');
-
-// Simulate adding an item to the cart (replace with your actual logic)
-document.querySelector('.nav-btn').addEventListener('click', () => {
-  let currentCount = parseInt(cartCountSpan.textContent, 10);
-  currentCount++;
-  cartCountSpan.textContent = currentCount;
-});
-
-</script>
+<script src="{{url_for('static', filename='js/scripts.js')}}"></script>
 
 </html>

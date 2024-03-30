@@ -1,57 +1,157 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Product Cards</title>
-  <link rel="stylesheet" href="style.css">
-</head>
+{% extends 'base.html' %}
+{% block title %} Add to cart {% endblock %}
+{% block main %}
+<style>
+h1 {
+  font-size: 24px;
+  margin: 0;
+}
+
+main {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between; 
+}
+
+.cartitem-cart {
+  width: 75%; /* Adjust width */
+  background-color: #fff;
+  padding: 15px;
+  margin: 20px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cartitem-details {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.cartitem-details img {
+  width: 100px;
+  height: auto;
+  margin-right: 15px;
+}
+
+.cartsummary-cart {
+  width: 30%; /* Adjust width */
+  background-color: #fff;
+  padding: 5px;
+  margin: 20px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  text-align: center; /* Center content */
+}
+
+.cartsummary-cart button {
+  background-color: lightgreen; /* Change button color */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 15px;
+}
+
+.quantity-control {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 10px;
+  margin: 10px;
+  width: 450px;
+}
+
+.count-buttons button {
+    background-color: #ddd;
+  padding: 5px;
+  border: none;
+  cursor: pointer;
+}
+ 
+
+.remove-btn  button{
+  background-color: transparent;
+  border: none;
+  color: red;
+  cursor: pointer;
+  background-color: #ddd;
+  padding: 5px;
+  border: none;
+  cursor: pointer;
+}
+</style>
 <body>
-  <div id="product-container">
-    {% for product in products %}
-      <div class="product-card">
-        <img src="data:image/jpeg;base64,{{ product.product_image }}" alt="Product Image">
-        <a href="#"><h6>{{product.seller_id}}</h4></a>
-        <h2>{{ product.prod_name }}</h2>
-        <p>Price: ${{ product.price }}</p>
-        <div class="product-actions">
-          <button class="cart-btn" data-product-id="{{ product.id }}">
-            <i class="bi-cart-fill me-1"></i> Cart (<span class="cart-count">0</span>)
-          </button>
-          <button class="favorite-btn" data-product-id="{{ product.id }}">
-            <i class="bi bi-heart-fill me-1"></i> Favorite (<span class="favorite-count">0</span>)
-          </button>
-        </div>
-        <button class="card-button">View More details</button>
-      </div>
-    {% endfor %}
-  </div>
+    <main>
+        <!-- {% for item in cart_items %} -->
+        <section class="cartitem-cart">
+          <div class="cartitem-details">
+            <div class="cart-image">
+                <img src="{{ item.product_image }}" alt="Shopping cart item">
+            </div>
+            <div class="cart-description">
+              <h2>{{ item.prod_name }}</h2>
+              <p>KSh {{ item.price }}</p>
+              <p>Quantity: {{ item.quantity }}</p>
+            </div>
+          </div>
+          <div class="quantity-control">
+            <div class="remove-btn">
+                <button>Remove</button>
+            </div>
+            <div class="count-buttons">
+              <button>-</button>
+              <span>3</span>
+              <button>+</button>
+            </div>
+          </div>
+        </section>
+        <!-- {% endfor %} -->
+        <section class="cartsummary-cart">
+            <h2>Cart Summary</h2>
+            <p>Subtotal: KSh {{ total_price }}</p>
+            <button class="checkout-btn">Checkout (KSh {{ total_price }})</button>
+          </section>
+    </main>
 
-  <script>
-    const cartBtns = document.querySelectorAll('.cart-btn');
-    const favoriteBtns = document.querySelectorAll('.favorite-btn');
-
-    cartBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const productId = btn.dataset.productId;
-        // Simulate adding to cart (replace with actual logic)
-        let currentCartCount = parseInt(btn.querySelector('.cart-count').textContent, 10);
-        currentCartCount++;
-        btn.querySelector('.cart-count').textContent = currentCartCount;
-
-        // Consider sending AJAX request to a server-side cart adding route if needed
-      });
+    <script>
+        function removeFromCart(productId) {
+    fetch(`/remove_from_cart/${productId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).then(response => {
+        if (response.ok) {
+            // Reload the page or update the cart UI
+        } else {
+            console.error('Error removing item from cart');
+        }
+    }).catch(error => {
+        console.error('Error:', error);
     });
+}
 
-    favoriteBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const productId = btn.dataset.productId;
-        // Simulate adding to favorites (replace with actual logic)
-        let currentFavoriteCount = parseInt(btn.querySelector('.favorite-count').textContent, 10);
-        currentFavoriteCount++;
-        btn.querySelector('.favorite-count').textContent = currentFavoriteCount;
-
-        // Consider sending AJAX request to a server-side favorites adding route if needed
-      });
+function incrementCount(productId) {
+    fetch(`/increment_count/${productId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).then(response => {
+        if (response.ok) {
+            // Reload the page or update the cart UI
+        } else {
+            console.error('Error incrementing count');
+        }
+    }).catch(error => {
+        console.error('Error:', error);
     });
-  </script>
-</body>
-</html>
+}
+    </script> 
+{% endblock %}
+

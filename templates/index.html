@@ -2,7 +2,7 @@
 {%block title%}index{%endblock%}
 {%block main%}
 <main>
-<div><h3>Recommendations</h3></div>
+    <div><h3>Top Products</h3></div>
 <div id="product-container">
     {% for product in products %}
     <a  href="{{ url_for('product_card', product_id=product.product_id) }}">
