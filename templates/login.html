@@ -1,19 +1,20 @@
-{%extends 'base.html'%}
-{%block title%}login{%endblock%}
+{% extends 'base.html'%}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 {%block main%}
 <main>
     <div class="container">
         <img src="{{url_for('static',filename='images/login_image.png')}}" alt="logo">
         <div class="form-content">
             <h2>Welcome back</h2>
-            <form method="post"  onsubmit="return validateForm()" class="form">
+            <form method="post"  onsubmit="return validateForm()" class="form" action="{{url_for('buyer_login')}}">
             <input type="email" id="email" name="email" placeholder="Email Address">
-            <p><button id="continue-button"><a href="{{url_for('login')}}" id="continue-button">Continue</a></button></p>
+            <input type="password" name="password" required placeholder="Password">
+            <p><button id="continue-button"> Continue</button></p>
             </form>
             <h3>Dont have an account?</h3>
             <a href="{{url_for('register')}}">Sign up</a>
             <p><hr>OR</hr></p>
-            <p><button id="google-button"><a href="{{url_for('callback')}}" ><i class="bi bi-google"></i>Continue with Google</a></button></p>
+            <p><a href="{{url_for('callback')}}"><button id="google-button"><i class="bi bi-google"></i>Continue with Google</button></a></p>
         </div>
     </div>
 </main>

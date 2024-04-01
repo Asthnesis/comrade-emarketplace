@@ -7,14 +7,18 @@ import os
 from flask import Flask, render_template, url_for, request, redirect, session, jsonify, flash
 from authlib.integrations.flask_client import OAuth
 import pymysql
-from db import *
 import base64
 import requests
+from requests.auth import HTTPBasicAuth
 import uuid
+import json
+from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 app = Flask(__name__)
 app.secret_key = ("84hrfnsdlkamk93")
+
 
 connection = pymysql.connect(host='localhost',
                              user='root',
@@ -22,6 +26,70 @@ connection = pymysql.connect(host='localhost',
                              database='comrade',
                              charset='utf8mb4',
                              cursorclass=pymysql.cursors.DictCursor)
+
+consumer_key = 'PKreMGJ7wTszUSnPOnZJcdPQEUbBcNDcCYu9IOqvqdYHrIbr'
+consumer_secret = '3UOS9ruBBQqK5qJrSxSKdos8JzdMXU1kAZEuUOUuDByn2LBXeODVyNqJGUVRXJT0'
+
+
+@app.route('/initiate_payment')
+def initiate_payment():
+    # partyA = '254729854464'
+    partyA = '254741889010'
+    endpoint = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest'
+
+    try:
+        access_token = get_access_token()
+        if access_token:
+            headers = {'Authorization': 'Bearer %s' % access_token}
+            timestamp = datetime.now()
+            times = timestamp.strftime("%Y%m%d%H%M%S")
+            password = '174379' + \
+                'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919' + times
+            password = base64.b64encode(password.encode('utf-8'))
+            password = password.decode('utf-8')
+            payload = {
+                "BusinessShortCode": "174379",
+                "Password": password,
+                "Timestamp": times,
+                "TransactionType": "CustomerPayBillOnline",
+                "Amount": "1",
+                "PartyA": partyA,
+                "PartyB": "174379",
+                "PhoneNumber": partyA,
+                "CallBackURL": "https://a13f-197-237-160-31.ngrok-free.app/callback",
+                "AccountReference": "Test",
+                "TransactionDesc": "Test Payment",
+            }
+
+            response = requests.post(endpoint, json=payload, headers=headers)
+
+            return 'Success, Request accepted for processing'
+        else:
+            return 'Access token not found'
+    except requests.RequestException as e:
+        return f'Error: {e}'
+
+
+@app.route('/stk_callback', methods=["POST", 'GET'])
+def stk_callback():
+    data = request.get_json()
+    print(data)
+    return 'ok'
+
+
+def get_access_token():
+    consumer_key = 'PKreMGJ7wTszUSnPOnZJcdPQEUbBcNDcCYu9IOqvqdYHrIbr'
+    consumer_secret = '3UOS9ruBBQqK5qJrSxSKdos8JzdMXU1kAZEuUOUuDByn2LBXeODVyNqJGUVRXJT0'
+    mpesa_auth_url = 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
+    try:
+        data = requests.get(mpesa_auth_url, auth=HTTPBasicAuth(
+            consumer_key, consumer_secret))
+        data.raise_for_status()
+        dict_data = data.json()
+        return dict_data.get('access_token')
+    except requests.RequestException as e:
+        print(f'Error: {e}')
+        return None
 
 
 @app.route('/')
@@ -31,14 +99,70 @@ def index():
             sql = "SELECT p.*, pi.product_image FROM product p LEFT JOIN product_images pi ON p.product_id = pi.product_id"
             cursor.execute(sql)
             products = cursor.fetchall()
+            cart_count = session.get('cart_count', 0)
             for product in products:
                 if product['product_image'] is not None:
                     product['product_image'] = base64.b64encode(
                         product['product_image']).decode('utf-8')
-            return render_template('index.html', products=products)
+            return render_template('index.html', products=products, cart_count=cart_count)
     except pymysql.Error as e:
         print("Error fetching product from database", e)
-        return []
+        flash("An error occurred while fetching products.")
+        return redirect(url_for('index'))
+
+
+@app.route('/filter/<category>')
+def filter_products(category):
+    try:
+        with connection.cursor() as cursor:
+            sql = """
+                SELECT p.*, pi.product_image 
+                FROM product p 
+                LEFT JOIN product_images pi ON p.product_id = pi.product_id
+                WHERE p.category = %s
+            """
+            cursor.execute(sql, (category,))
+            products = cursor.fetchall()
+            cart_count = session.get('cart_count', 0)
+            for product in products:
+                if product['product_image'] is not None:
+                    product['product_image'] = base64.b64encode(
+                        product['product_image']).decode('utf-8')
+            if not products:
+                flash("No products found in this category.")
+            return render_template('index.html', products=products, cart_count=cart_count)
+    except pymysql.Error as e:
+        print("Error fetching product from database", e)
+        flash("An error occurred while fetching products.")
+        return redirect(url_for('index'))
+
+
+@app.route('/search', methods=['POST'])
+def search_products():
+    try:
+        search_query = request.form.get('search_query').strip().lower()
+
+        with connection.cursor() as cursor:
+            sql = """
+                SELECT p.*, pi.product_image 
+                FROM product p 
+                LEFT JOIN product_images pi ON p.product_id = pi.product_id
+                WHERE LOWER(p.prod_name) LIKE %s
+            """
+            cursor.execute(sql, ('%' + search_query + '%',))
+            products = cursor.fetchall()
+            cart_count = session.get('cart_count', 0)
+            for product in products:
+                if product['product_image'] is not None:
+                    product['product_image'] = base64.b64encode(
+                        product['product_image']).decode('utf-8')
+            if not products:
+                flash("No products found matching your search.")
+            return render_template('index.html', products=products, cart_count=cart_count)
+    except pymysql.Error as e:
+        print("Error fetching product from database", e)
+        flash("An error occurred while fetching products.")
+        return redirect(url_for('index'))
 
 
 @app.route('/product_card/<string:product_id>', methods=['GET'])
@@ -79,6 +203,25 @@ def login():
 @app.route('/seller_login')
 def seller_login():
     return render_template("seller_login.html")
+
+
+@app.route('/checkout')
+def checkout():
+    try:
+        user_id = session['user_id']
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT * FROM user_account WHERE user_id = %s", (user_id,))
+            user_details = cursor.fetchone()
+            cursor.execute(
+                "SELECT * FROM cart WHERE user_id = %s", (user_id,))
+            cart_details = cursor.fetchone()
+
+            return render_template('checkout.html', user_details=user_details, cart_details=cart_details)
+
+    except pymysql.err.InterfaceError as e:
+        flash(f"Error connecting to database: {e}")
+        return "An error occurred while fetching user details"
 
 
 @app.route('/profile')
@@ -130,33 +273,48 @@ def logout():
 @app.route('/cart')
 def cart():
     if 'user_id' not in session:
-        flash('You need to be logged in to view your cart', 'error')
+        print('You need to be logged in to view your cart', 'error')
         return redirect(url_for('login'))
 
     user_id = session['user_id']
-    product_id = session.get('product_id')
 
     try:
         with connection.cursor() as cursor:
-            sql = """
-SELECT p.prod_name, p.price, pi.product_image, c.quantity 
-FROM product p 
-INNER JOIN cart c ON p.product_id = c.product_id 
-INNER JOIN product_images pi ON p.product_id = pi.product_id
-WHERE c.user_id = %s
-
-"""
-            cursor.execute(sql, (product_id,))
+            # Fetch cart items
+            cart_sql = """SELECT * FROM cart WHERE user_id = %s"""
+            cursor.execute(cart_sql, (user_id,))
             cart_items = cursor.fetchall()
 
-        total_price = sum(item['price'] * item['quantity']
-                          for item in cart_items)
+            if cart_items:
+                product_ids = [item['product_id'] for item in cart_items]
 
-        return render_template('cart.html', cart_items=cart_items, total_price=total_price)
+                # Fetch product details for cart items
+                product_sql = """SELECT p.*, pi.product_image 
+                                 FROM product p 
+                                 INNER JOIN product_images pi ON p.product_id = pi.product_id 
+                                 WHERE p.product_id IN ({})""".format(','.join(['%s']*len(product_ids)))
+                cursor.execute(product_sql, product_ids)
+                products = cursor.fetchall()
+
+                # Convert images to base64
+                for product in products:
+                    product['product_image'] = base64.b64encode(
+                        product['product_image']).decode('utf-8')
+
+                # Combine cart items with product details
+                for cart_item in cart_items:
+                    for product in products:
+                        if cart_item['product_id'] == product['product_id']:
+                            cart_item.update(product)
+                            break
+
+            cart_count = session.get('cart_count', 0)
+            total_price = sum(item['price'] * item['quantity']
+                              for item in cart_items)
+
+            return render_template('cart.html', cart_items=cart_items, cart_count=cart_count, total_price=total_price)
     except Exception as e:
-        print("Error fetching cart items:", e)
-        flash('An error occurred while fetching your cart items', 'error')
-        return redirect(url_for('index'))
+        return 'Error fetching cart items: {}'.format(str(e)), 'error'
 
 
 @app.route('/add_to_favourites', methods=['POST'])
@@ -197,13 +355,35 @@ def seller_dashboard():
         return redirect(url_for('seller_login'))
 
     if request.method == 'GET':
-        seller_id = session['seller_id']
-        products = fetch_product_data_from_database(seller_id)
-        for product in products:
-            if product['product_image'] is not None:
-                product['product_image'] = base64.b64encode(
-                    product['product_image']).decode('utf-8')
-        return render_template('seller_dashboard.html', products=products)
+        try:
+            user_id = session['user_id']
+            with connection.cursor() as cursor:
+                sql = "SELECT u.*, b.buyer_id, s.seller_id FROM user_account u LEFT JOIN buyer b ON u.user_id = b.user_id LEFT JOIN seller s ON u.user_id = s.user_id WHERE u.user_id = %s"
+                cursor.execute(sql, (user_id,))
+                user_data = cursor.fetchone()
+
+            if user_data:
+                first_name = user_data['first_name']
+                last_name = user_data['last_name']
+                email = user_data['email']
+                buyer_id = user_data['buyer_id']
+                seller_id = user_data['seller_id']
+                cart_count = session.get('cart_count', 0)
+                seller_id = session['seller_id']
+                products = fetch_product_data_from_database(seller_id)
+                for product in products:
+                    if product['product_image'] is not None:
+                        product['product_image'] = base64.b64encode(
+                            product['product_image']).decode('utf-8')
+                return render_template('seller_dashboard.html', products=products, user_id=user_id, first_name=first_name, last_name=last_name, email=email, buyer_id=buyer_id, seller_id=seller_id, cart_count=cart_count)
+
+            else:
+                flash("User data not found.")
+                return "User data not found"
+
+        except pymysql.err.InterfaceError as e:
+            flash(f"Error connecting to database: {e}")
+            return redirect(url_for('login'))
 
     elif request.method == 'POST':
         if request.form.get('action') == 'delete':
@@ -224,61 +404,50 @@ def favourites():
 @app.route('/add_to_cart', methods=['POST'])
 def add_to_cart():
     if 'user_id' not in session:
-        flash('You need to be logged in', 'error')
-        return redirect(url_for('login'))
+        return jsonify({'success': False, 'message': 'User not logged in'})
 
-    user_id = session.get('user_id')
+    user_id = session['user_id']
+    product_id = request.json.get('product_id')
 
-    if user_id:
-        try:
-            product_id = request.json.get('product_id')
-            with connection.cursor() as cursor:
-                sql = "SELECT available_units,price FROM product WHERE product_id = %s"
-                cursor.execute(sql, (product_id,))
-                product = cursor.fetchone()
+    if not product_id:
+        return jsonify({'success': False, 'message': 'Product ID not provided'})
 
-                if not product:
-                    flash('Product not found', 'error')
-                    # Redirect to some appropriate page
-                    return redirect(url_for('index'))
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM product WHERE product_id = %s"
+            cursor.execute(sql, (product_id,))
+            product = cursor.fetchone()
+            price = product['price']
 
-                quantity_limit = product['available_units']
-                price = product['price']
+            if not product:
+                return jsonify({'success': False, 'message': 'Product not found'}), 404
 
-            # Check if the product is already in the cart and its current quantity
-                sql = "SELECT quantity FROM cart WHERE user_id = %s AND product_id = %s"
-                cursor.execute(sql, (user_id, product_id))
-                existing_cart_item = cursor.fetchone()
+            quantity_limit = product['available_units']
 
-                current_quantity = existing_cart_item['quantity'] if existing_cart_item else 0
+            sql = "SELECT quantity FROM cart WHERE user_id = %s AND product_id = %s"
+            cursor.execute(sql, (user_id, product_id))
+            existing_cart_item = cursor.fetchone()
 
-                if current_quantity >= quantity_limit:
-                    flash('Quantity limit reached for this product', 'error')
-                    # Redirect to some appropriate page
-                    return redirect(url_for('index'))
+            current_quantity = existing_cart_item['quantity'] if existing_cart_item else 0
 
-                if existing_cart_item:
-                    # If the product is already in the cart, update the quantity
-                    sql = "UPDATE cart SET quantity = quantity + 1, total_price = total_price + %s WHERE user_id = %s AND product_id = %s"
-                    cursor.execute(sql, (price, user_id, product_id))
-                else:
-                    # If the product is not in the cart, insert a new entry
-                    sql = "INSERT INTO cart (user_id, product_id, quantity, total_price) VALUES (%s, %s, 1, %s)"
-                    cursor.execute(sql, (user_id, product_id, price))
-                connection.commit()
-                cart_count = update_cart_count()
+            if current_quantity >= quantity_limit:
+                return jsonify({'success': False, 'message': 'Quantity limit reached for this product'})
 
-                flash('Product added to cart', 'success')
-                # Redirect to some appropriate page
-                return redirect(url_for('index'))
-        except Exception as e:
-            print("Error adding to cart", e)
-            flash('An error occurred while adding to cart', 'error')
-            # Redirect to some appropriate page
-            return redirect(url_for('index'))
-    else:
-        flash('User ID not found in session', 'error')
-        return redirect(url_for('index'))  # Redirect to some appropriate page
+            if existing_cart_item:
+                # If the product is already in the cart, update the quantity
+                sql = "UPDATE cart SET quantity = quantity + 1,total_price = total_price + %s WHERE user_id = %s AND product_id = %s"
+                cursor.execute(sql, (price, user_id, product_id))
+            else:
+                sql = "INSERT INTO cart (user_id, product_id, quantity, total_price) VALUES (%s, %s, 1, %s)"
+                cursor.execute(sql, (user_id, product_id, price))
+
+            connection.commit()
+            update_cart_count()
+
+            return jsonify({'success': True, 'message': 'Product added to cart successfully'})
+    except Exception as e:
+        print("Error:", e)
+        return jsonify({'success': False, 'message': 'An error occurred while processing the request'}), 500
 
 
 def update_cart_count():
@@ -286,7 +455,7 @@ def update_cart_count():
         user_id = session.get('user_id')
         if user_id:
             with connection.cursor() as cursor:
-                sql = "SELECT COUNT(*) AS cart_count FROM cart WHERE user_id = %s"
+                sql = "SELECT SUM(quantity) AS cart_count FROM cart WHERE user_id = %s"
                 cursor.execute(sql, (user_id,))
                 result = cursor.fetchone()
                 if result:
@@ -304,6 +473,124 @@ def update_cart_count():
     except Exception as e:
         print("Error updating cart count:", e)
         return 0
+
+
+def generate_product_id():
+    return str(uuid.uuid4())[:8].upper()
+
+
+def get_sub_category_id(sub_category_name):
+    sub_category_mapping = {
+        'fiction': 1,
+        'non-fiction': 2,
+        'mystery': 3,
+        'romance': 4,
+        'computers': 5,
+        'smartphones': 6,
+        'televisions': 7,
+        'cameras': 8,
+        'living-room-furniture': 9,
+        'bedroom-furniture': 10,
+        'dining-room': 11,
+        'office': 12,
+        'cleaning': 13,
+        'repair': 14,
+        'maintenance': 15,
+        'consultation': 16,
+        'skincare': 17,
+        'makeup': 18,
+        'haircare': 19,
+        'fragrances': 20,
+        'stationery': 21,
+        'home-decor': 22,
+        'kitchenware': 23,
+        'sports': 24,
+        'travel': 25,
+        'entertainment': 26,
+    }
+
+    return sub_category_mapping.get(sub_category_name.lower(), None)
+
+
+def insert_product(product_name, condition, sub_category_name, description, available_units, price, image_data, seller_id):
+    try:
+        with connection.cursor() as cursor:
+            sub_category_id = get_sub_category_id(sub_category_name)
+            if sub_category_id:
+                product_id = generate_product_id()
+                escaped_description = description.replace('\'', '\\\'')
+                sql = "INSERT INTO product (product_id, prod_name, prod_condition, sub_cat_id, description, available_units, price, seller_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+                cursor.execute(
+                    sql, (product_id, product_name, condition,
+                          sub_category_id, escaped_description, available_units, price, seller_id))
+                connection.commit()
+
+                sql = "INSERT INTO product_images (product_id, product_image) VALUES (%s, %s)"
+                cursor.execute(sql, (product_id, image_data))
+                connection.commit()
+                return True
+    except Exception as e:
+        print("Error inserting product:", e)
+        return False
+
+
+@app.route('/seller_dashboard/add_product', methods=['GET', 'POST'])
+def add_product():
+    if request.method == 'POST':
+        try:
+            product_name = request.form['product-name']
+            category = request.form['category']
+            sub_category_name = request.form['sub-category']
+            seller_id = session.get('seller_id')
+
+            files = request.files.getlist('product-images[]')
+            for file in files:
+
+                if file.filename != '':
+                    filename = secure_filename(file.filename)
+                    image_data = file.read()
+
+            price = float(request.form['price'])
+            description = request.form['description']
+            condition = request.form['condition']
+            available_units = int(request.form['units'])
+
+            if insert_product(product_name, condition, sub_category_name, description, available_units, price, image_data, seller_id):
+                return redirect(url_for('seller_dashboard'))
+            else:
+                print('Error inserting product. Please try again.', 'error')
+                return redirect(url_for('seller_dashboard'))
+        except Exception as e:
+            print(f'An error occurred: {str(e)}', 'error')
+            return redirect(url_for('seller_dashboard'))
+    else:
+        return 'Method not allowed'
+
+
+def fetch_product_data_from_database(seller_id):
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT p.*, pi.product_image FROM product p LEFT JOIN product_images pi ON p.product_id = pi.product_id WHERE p.seller_id = %s"
+            cursor.execute(sql, (seller_id,))
+            products = cursor.fetchall()
+        return products
+    except pymysql.Error as e:
+        print("Error fetching product from database", e)
+        return []
+
+
+def delete_product_from_database(product_id):
+    try:
+        with connection.cursor() as cursor:
+            sql = "DELETE FROM product WHERE product_id = %s"
+            cursor.execute(sql, (product_id,))
+            connection.commit()
+    except pymysql.Error as e:
+        print("Error deleting product from the database:", e)
+        flash("An error occurred while deleting the product. Please try again.", "error")
+    finally:
+        connection.close()
+    return redirect(url_for('manage_products'))
 
 
 # Google O-auth
@@ -471,10 +758,6 @@ def generate_seller_id(table):
         return None
 
 
-def generate_product_id():
-    return str(uuid.uuid4())[:8].upper()
-
-
 @app.route('/seller_callback')
 def seller_callback():
     google = oauth.create_client('google')
@@ -603,118 +886,192 @@ def seller_register_authorize():
     else:
         # Required information not found in user_info
         flash("User information incomplete. Please try again.")
-        return redirect(url_for('seller_login'))
 
 
-def get_sub_category_id(sub_category_name):
-    sub_category_mapping = {
-        'fiction': 1,
-        'non-fiction': 2,
-        'mystery': 3,
-        'romance': 4,
-        'computers': 5,
-        'smartphones': 6,
-        'televisions': 7,
-        'cameras': 8,
-        'living-room-furniture': 9,
-        'bedroom-furniture': 10,
-        'dining-room': 11,
-        'office': 12,
-        'cleaning': 13,
-        'repair': 14,
-        'maintenance': 15,
-        'consultation': 16,
-        'skincare': 17,
-        'makeup': 18,
-        'haircare': 19,
-        'fragrances': 20,
-        'stationery': 21,
-        'home-decor': 22,
-        'kitchenware': 23,
-        'sports': 24,
-        'travel': 25,
-        'entertainment': 26,
-    }
-
-    return sub_category_mapping.get(sub_category_name.lower(), None)
-
-
-def insert_product(product_name, condition, sub_category_name, description, available_units, price, image_data, seller_id):
-    try:
-        with connection.cursor() as cursor:
-            sub_category_id = get_sub_category_id(sub_category_name)
-            if sub_category_id:
-                product_id = generate_product_id()
-                escaped_description = description.replace('\'', '\\\'')
-                sql = "INSERT INTO product (product_id, prod_name, prod_condition, sub_cat_id, description, available_units, price, seller_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-                cursor.execute(
-                    sql, (product_id, product_name, condition,
-                          sub_category_id, escaped_description, available_units, price, seller_id))
-                connection.commit()
-
-                sql = "INSERT INTO product_images (product_id, product_image) VALUES (%s, %s)"
-                cursor.execute(sql, (product_id, image_data))
-                connection.commit()
-                return True
-    except Exception as e:
-        print("Error inserting product:", e)
-        return False
-
-
-@app.route('/seller_dashboard/add_product', methods=['GET', 'POST'])
-def add_product():
+# Buyer Registration and Login Routes
+@app.route('/buyer_register', methods=['GET', 'POST'])
+def buyer_register():
     if request.method == 'POST':
-        try:
-            product_name = request.form['product-name']
-            category = request.form['category']
-            sub_category_name = request.form['sub-category']
-            seller_id = session.get('seller_id')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        address = request.form.get('address')
+        phone = request.form.get('phone')
+        fname = request.form.get('fname')
+        lname = request.form.get('lname')
 
-            files = request.files.getlist('product-images[]')
-            for file in files:
+        # Check if the user already exists
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM user_account WHERE email = %s"
+            cursor.execute(sql, (email,))
+            user = cursor.fetchone()
 
-                if file.filename != '':
-                    filename = secure_filename(file.filename)
-                    image_data = file.read()
+            if user:
+                flash('User already exists. Please log in.')
+                return redirect(url_for('login'))
+            else:
+                # User doesn't exist, register the user
+                # Hash the password before storing it
+                hashed_password = generate_password_hash(password)
+                user_id = generate_user_id("user")
+                buyer_id = generate_buyer_id("buyer")
+                role = 'buyer'
 
-            price = float(request.form['price'])
-            description = request.form['description']
-            condition = request.form['condition']
-            available_units = int(request.form['units'])
+                cursor.execute('''
+                    INSERT INTO user (user_id) 
+                    VALUES (%s)
+                ''', (user_id,))
+                cursor.execute('''
+                    INSERT INTO user_account (user_id, email, password, first_name, last_name, role, address, phone) 
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                ''', (user_id, email, hashed_password, fname, lname, role, address, phone))
+                connection.commit()
 
-            if insert_product(product_name, condition, sub_category_name, description, available_units, price, image_data, seller_id):
+                # Insert buyer details into buyer table
+                cursor.execute('''
+                    INSERT INTO buyer (user_id, buyer_id) 
+                    VALUES (%s, %s)
+                ''', (user_id, buyer_id,))
+                connection.commit()
+
+                session['user_id'] = user_id
+                session['email'] = email
+                session['fname'] = fname
+                session['lname'] = lname
+                session['role'] = role
+
+                flash('Registration successful. Welcome, ' + fname + '!')
+                return redirect(url_for('profile'))
+
+    return render_template('register.html')
+
+
+@app.route('/buyer_login', methods=['GET', 'POST'])
+def buyer_login():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        # Check if the user exists and the password is correct
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM user_account WHERE email = %s"
+            cursor.execute(sql, (email,))
+            user = cursor.fetchone()
+
+            if user and check_password(user['password'], password):
+                session['user_id'] = user['user_id']
+                session['email'] = user['email']
+                session['fname'] = user['first_name']
+                session['lname'] = user['last_name']
+                session['role'] = user['role']
+
+                if user['role'] == 'buyer':
+                    session['buyer_id'] = user['buyer_id']
+                elif user['role'] == 'seller':
+                    session['seller_id'] = user['seller_id']
+
+                flash('Login successful!')
+                return redirect(url_for('profile'))
+            else:
+                flash('Invalid email or password. Please try again.')
+                return redirect(url_for('login'))
+
+    return render_template('login.html')
+
+# Seller Registration and Login Routes
+
+
+@app.route('/seller_register_new', methods=['GET', 'POST'])
+def seller_register_new():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        address = request.form.get('address')
+        phone = request.form.get('phone')
+        fname = request.form.get('fname')
+        lname = request.form.get('lname')
+
+        # Check if the user already exists
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM user_account WHERE email = %s"
+            cursor.execute(sql, (email,))
+            user = cursor.fetchone()
+
+            if user:
+                flash('User already exists. Please log in.')
+                return redirect(url_for('seller_login'))
+            else:
+                # User doesn't exist, register the user
+                # Hash the password before storing it
+                hashed_password = generate_password_hash(password)
+                user_id = generate_user_id("user")
+                seller_id = generate_seller_id("seller")
+                role = 'seller'
+
+                cursor.execute('''
+                    INSERT INTO user (user_id) 
+                    VALUES (%s)
+                ''', (user_id,))
+                cursor.execute('''
+                    INSERT INTO user_account (user_id, email, password, first_name, last_name, role, address, phone) 
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                ''', (user_id, email, hashed_password, fname, lname, role, address, phone))
+                connection.commit()
+
+                # Insert seller details into seller table
+                cursor.execute('''
+                    INSERT INTO seller (user_id, seller_id) 
+                    VALUES (%s, %s)
+                ''', (user_id, seller_id,))
+                connection.commit()
+
+                session['user_id'] = user_id
+                session['email'] = email
+                session['fname'] = fname
+                session['lname'] = lname
+                session['role'] = role
+
+                flash('Registration successful. Welcome, ' + fname + '!')
+                return redirect(url_for('seller_dashboard'))
+
+    return render_template('seller_register.html')
+
+
+@app.route('/seller_login_new', methods=['GET', 'POST'])
+def seller_login_new():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        # Check if the user exists and the password is correct
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM user_account WHERE email = %s"
+            cursor.execute(sql, (email,))
+            user = cursor.fetchone()
+
+            if user and check_password(user['password'], password):
+                session['user_id'] = user['user_id']
+                session['email'] = user['email']
+                session['fname'] = user['first_name']
+                session['lname'] = user['last_name']
+                session['role'] = user['role']
+
+                if user['role'] == 'buyer':
+                    session['buyer_id'] = user['buyer_id']
+                elif user['role'] == 'seller':
+                    session['seller_id'] = user['seller_id']
+
+                flash('Login successful!')
                 return redirect(url_for('seller_dashboard'))
             else:
-                print('Error inserting product. Please try again.', 'error')
-                return redirect(url_for('seller_dashboard'))
-        except Exception as e:
-            print(f'An error occurred: {str(e)}', 'error')
-            return redirect(url_for('seller_dashboard'))
-    else:
-        return 'Method not allowed'
+                flash('Invalid email or password. Please try again.')
+                return redirect(url_for('seller_login'))
+
+    return render_template('seller_login.html')
 
 
-def fetch_product_data_from_database(seller_id):
-    try:
-        with connection.cursor() as cursor:
-            sql = "SELECT p.*, pi.product_image FROM product p LEFT JOIN product_images pi ON p.product_id = pi.product_id WHERE p.seller_id = %s"
-            cursor.execute(sql, (seller_id,))
-            products = cursor.fetchall()
-        return products
-    except pymysql.Error as e:
-        print("Error fetching product from database", e)
-        return []
+def generate_hash(password):
+    return generate_password_hash(password)
 
 
-def delete_product_from_database(product_id):
-    try:
-        with connection.cursor() as cursor:
-            sql = "DELETE FROM product WHERE product_id = %s"
-            cursor.execute(sql, (product_id,))
-            connection.commit()
-    except pymysql.Error as e:
-        print("Error deleting product from the database:", e)
-        flash("An error occurred while deleting the product. Please try again.", "error")
-    finally:
-        connection.close()
-    return redirect(url_for('manage_products'))
+def check_password(input_password, hashed_password):
+    return check_password_hash(hashed_password, input_password)

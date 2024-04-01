@@ -7,11 +7,19 @@ h1 {
   margin: 0;
 }
 
-main {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between; 
-}
+.main {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between; 
+  }
+
+  /* Additional styles for responsiveness */
+  @media screen and (max-width: 768px) {
+    .main {
+      flex-direction: column;
+      align-items: center;
+    }
+  }
 
 .cartitem-cart {
   width: 75%; /* Adjust width */
@@ -29,6 +37,7 @@ main {
   display: flex;
   flex-direction: row;
   align-items: center;
+  width: 450px;
 }
 
 .cartitem-details img {
@@ -86,39 +95,50 @@ main {
 }
 </style>
 <body>
-    <main>
-        <!-- {% for item in cart_items %} -->
-        <section class="cartitem-cart">
-          <div class="cartitem-details">
-            <div class="cart-image">
-                <img src="{{ item.product_image }}" alt="Shopping cart item">
-            </div>
-            <div class="cart-description">
-              <h2>{{ item.prod_name }}</h2>
-              <p>KSh {{ item.price }}</p>
-              <p>Quantity: {{ item.quantity }}</p>
-            </div>
-          </div>
-          <div class="quantity-control">
-            <div class="remove-btn">
-                <button>Remove</button>
-            </div>
-            <div class="count-buttons">
-              <button>-</button>
-              <span>3</span>
-              <button>+</button>
-            </div>
-          </div>
-        </section>
-        <!-- {% endfor %} -->
-        <section class="cartsummary-cart">
-            <h2>Cart Summary</h2>
-            <p>Subtotal: KSh {{ total_price }}</p>
-            <button class="checkout-btn">Checkout (KSh {{ total_price }})</button>
-          </section>
-    </main>
+  <main>
+<div class="main">
+  {% for item in cart_items %}
+  <section class="cartitem-cart">
+    <div class="cartitem-details">
+      <div class="cart-image">
+        <img src="data:image/jpeg;base64,{{ item.product_image }}" alt="Product Image">
+      </div>
+      <div class="cart-description">
+        <h2>{{ item.prod_name }}</h2>
+        <p>KSh {{ item.price }}</p>
+        <p>Quantity: {{ item.quantity }}</p>
+      </div>
+    </div>
+    <div class="quantity-control">
+      <div class="remove-btn">
+        <button>Remove</button>
+      </div>
+      <div class="count-buttons">
+        <button>-</button>
+        <span>{{ item.quantity }}</span>
+        <button>+</button>
+      </div>
+    </div>
+  </section>
+  {% endfor %}
+  <section class="cartsummary-cart">
+    <h2>Cart Summary</h2>
+    <p>Subtotal: KSh {{ total_price }}</p>
+    <a href="{{ url_for('checkout') }}" class="checkout-btn">
+      <button>
+        Checkout (Ksh{{ total_price }})
+      </button>
+    </a>
+  </section>
+</div>
+</main>
+{% endblock %}
 
-    <script>
+
+
+
+
+<script>
         function removeFromCart(productId) {
     fetch(`/remove_from_cart/${productId}`, {
         method: 'DELETE',
@@ -153,5 +173,5 @@ function incrementCount(productId) {
     });
 }
     </script> 
-{% endblock %}
+
 

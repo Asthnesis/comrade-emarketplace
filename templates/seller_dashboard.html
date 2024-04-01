@@ -37,7 +37,7 @@
 }
 
 .sidebar a {
-  color: #333; /* Dark gray for text */
+  color: #333;
   text-decoration: none;
   display: block;
   padding: 10px;
@@ -45,17 +45,17 @@
 }
 
 .sidebar a.active {
-  background-color: #666; /* Maintains dark gray for active link */
+  background-color: #666; 
 }
 
 .sidebar a:hover {
-  background-color: #fff; /* White on hover */
+  background-color: #fff;
 }
 
 .content {
   flex: 1;
   padding: 20px;
-  background-color: #fff; /* White background for content area */
+  background-color: #fff;
 }
 
 .content h2 {
@@ -106,6 +106,11 @@
   border: 1px solid #ccc;
   border-radius: 3px;
 }
+.profile-section {
+  background-color: #fff; /* Set desired background color */
+  padding: 20px;
+  margin: 20px 0;
+}
 
 .form-group textarea {
   height: 100px;
@@ -114,19 +119,14 @@
   display: none;
 }
 </style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 <body>
     {% block header %}
     <header>
-        <div class="header-left">
-            <h1><a href="/">Vendor Center</a></h1> <!-- Replace "/" with the URL of your homepage if needed -->
-        </div>
-        <div class="header-right">
-            <div class="profile">
-                <a href="/profile">Profile</a> <!-- Replace "/profile" with the URL of your profile page -->
-                <!-- Add any profile image or icon here -->
-            </div>
-        </div>
-    </header>
+      <a href="{{url_for('seller_dashboard')}}"><img src="{{url_for('static',filename='images/logo.jpg')}}" alt="logo"></a>
+      <h2>Vendor Dashboard</h2>
+    </div>
+  </header>
     {% endblock %}
   <div class="container">
     <aside class="sidebar">
@@ -135,7 +135,7 @@
       <a href="#products">Products</a>
         <a name="manage-products" href="#manage-products">Manage Products</a>
         <a href="#add-products">Add Products</a>
-      <a href="#statements">Account Statements</a>
+      <a href="#profile">Profile</a>
     </aside>
 
     <div class="content">
@@ -300,39 +300,41 @@
               <button type="submit">Add Product</button>
       </form>
           </section>
-    
-          <section id="statements" class="section">
-            <h2>Account Statements</h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>Payment ID</th>
-                  <th>Amount</th>
-                  <th>Payment Date</th>
-                  <th>Payer ID</th>
-                  <th>Receiver ID</th>
-                  <th>Payment Method</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td></td>
-                  <td>$25.00</td>
-                  <td>2024-03-26</td>
-                  <td>VENDOR123</td>
-                  <td>CUSTOMER456</td>
-                  <td>Credit Card</td>
-                  <td>Completed</td>
-                </tr>
-              </tbody>
-            </table>
+
+          <section class="profile-section">
+            <div class="profile">
+              <div class="profile-account-info show">
+                <h2>Account Info</h2>
+                <div class="info-details">
+                  <p>First Name: <span>{{ first_name }}</span></p>
+                  <p>Last Name: <span>{{ last_name}}</span></p>
+                  <p>Role ID: <span>{{ seller_id}}</span></p>
+                  <p>ID: <span>{{ user_id }}</span></p>
+                  <p>Email Address: <span>{{ email}}</span></p>
+                  <label for="phone">Phone Number:</label>
+                  <input type="text" id="phone" name="phone" placeholder="Enter your phone number">
+                </div>
+                <button type="button">Save</button>
+              </div>
+              <div class="profile-change-password">
+                <h2>Orders</h2>
+                <p>List of Orders</p>
+              </div>
+              <div class="profile-logout">
+                <h2>Log out</h2>
+                <p>Are you sure you want to log out?</p>
+                <a href="{{url_for('logout')}}"><button type="button">Log out</button></a>
+              </div>
+            </div>
           </section>
+          
     
         </div>
       </div>
     
-    </body><script>    document.getElementById('product-images').addEventListener('change', function (event) {
+    </body>
+    
+    <script>    document.getElementById('product-images').addEventListener('change', function (event) {
       var container = document.getElementById('image-preview-container');
       container.innerHTML = ''; // Clear previous previews
 

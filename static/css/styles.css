@@ -341,7 +341,7 @@ h1 {
 
 #google-button {
   cursor: pointer;
-  background-color: aliceblue;
+  background-color: cyan;
   border: 1px solid black;
   height: 35px;
   width: 100%; /* Occupy full width of the container */
@@ -363,7 +363,7 @@ h1 {
 .register-container {
   display: flex;
   justify-content: space-between;
-  width: 900px;
+  width: 1024px;
   margin: 50px auto;
   border: 1px solid #ccc;
   padding: 30px;
@@ -372,7 +372,7 @@ h1 {
 }
 
 .register-container .register-img {
-  max-width: 40%;
+  max-width: 65%;
   margin-right: 30px;
 }
 
@@ -392,7 +392,7 @@ h1 {
   width: 100%;
 }
 
-.register-container .register-form-content button {
+.register-container {
   width: 100%;
   padding: 10px;
   background-color: aquamarine;
@@ -408,7 +408,6 @@ h1 {
 
 .register-container #register-google-button {
   cursor: pointer;
-  background-color: aliceblue;
   border: 1px solid black;
   height: 35px;
   width: 100%; /* Occupy full width of the container */

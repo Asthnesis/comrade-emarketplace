@@ -6,67 +6,52 @@
     <title>Document</title>
 </head>
 <style>
-    .cart-container {
-    width: 80%;
-    margin: auto;
+    .customer-address {
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 15px;
 }
 
-.cart-header, .cart-summary {
-    background-color: #f0f0f0;
-    padding: 10px;
-    text-align: center;
+.customer-address header {
+  font-weight: bold;
+  margin-bottom: 10px;
 }
 
-.cart-item {
-    display: flex;
-    border-bottom: 1px solid #ccc;
-    padding: 10px;
-    align-items: center;
+.change-link {
+  text-decoration: none;
+  color: #007bff;
+  font-size: 0.8em;
+  margin-left: auto;
 }
 
-.item-details {
-    margin-left: 20px;
+hr {
+  margin: 10px 0;
+  border-top: 1px solid #ddd;
 }
 
-.remove-button, .checkout-button {
-    background-color: red;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
+.details {
+  margin-top: 10px;
 }
 
-.remove-button {
-    margin-top: 10px;
-}
-
-.checkout-button {
-    width: 100%;
-    box-sizing: border-box;
+.user-name {
+  font-weight: bold;
+  margin-bottom: 5px;
 }
 
 </style>
 <body>
-    <div class="cart-container">
-        <div class="cart-header">
-            <h2>Cart (3)</h2>
+    <div class="customer-address">
+        <header>CUSTOMER ADDRESS</header>
+        <a href="#" class="change-link">Change</a>
+        <hr>
+        <div class="details">
+          <p class="user-name">Edward Rasto</p>
+          <p class="user-address">Pangani | Nairobi - Starehe - Ngara/Desai Road/Equity/Park Road | +254 700569489</p>
         </div>
-        <div class="cart-item">
-            <img src="smartwatch.jpg" alt="Smartwatch">
-            <div class="item-details">
-                <p class="item-name">Smartwatch Business Bluetooth Waterproof Sport</p>
-                <p class="item-seller">Seller: JC-Hom</p>
-                <p class="item-status">In Stock</p>
-                <button class="remove-button">REMOVE</button>
-            </div>
-        </div>
-        <div class="cart-summary">
-            <h3>CART SUMMARY</h3>
-            <p class="subtotal">Subtotal KSh 1,779</p>
-            <p class="delivery-info">Delivery fees not included yet</p>
-            <button class="checkout-button">CHECKOUT (KSh 1,779)</button>
-        </div>
-    </div>
-    
+      </div>
 </body>
 </html>
+  

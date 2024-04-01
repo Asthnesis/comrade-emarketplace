@@ -1,69 +1,55 @@
-# Sample Python code to simulate the process of retrieving transaction details,
-# identifying the buyer and seller, checking payment status, product delivery,
-# and disbursing funds using a hypothetical API (e.g., Safaricom Daraja B2C).
+from flask import Flask
+import requests
+from requests.auth import HTTPBasicAuth
 
-# Please note that this is a simplified example and does not interact with real APIs or databases.
-
-# Define a function to simulate retrieving transaction details from a database
-def get_transaction_details(transaction_id):
-    # This is a placeholder for database retrieval logic
-    # In a real scenario, this would involve querying a database
-    transaction_details = {
-        'transaction_id': transaction_id,
-        'buyer_id': 'buyer123',
-        'seller_id': 'seller456',
-        'amount': 1000,
-        'product_received': False
-    }
-    return transaction_details
-
-# Define a function to simulate checking if the buyer has sent the amount
+app = Flask(__name__)
 
 
-def check_payment_status(buyer_id, transaction_id):
-    # This is a placeholder for payment status check logic
-    # In a real scenario, this would involve checking a payment system or API
-    payment_status = True  # Assuming payment is made for simplicity
-    return payment_status
+@app.route('/initiate_payment', methods=['POST'])
+def initiate_payment():
+    partyA = input('Enter phone')
+    try:
+        access_token = get_access_token()
+        if access_token:
+            # Replace these placeholders with actual data
+            payload = {
+                "BusinessShortCode": "174379",
+                "Password": "Safaricom999!*!",
+                "Timestamp": "20220314072700",
+                "TransactionType": "CustomerPayBillOnline",
+                "Amount": "1",
+                "PartyA": partyA,
+                "PartyB": "174379",
+                "PhoneNumber": partyA,
+                "CallBackURL": "YOUR_CALLBACK_URL",
+                "AccountReference": "Test",
+                "TransactionDesc": "Test Payment"
+            }
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {access_token}'
+            }
+            response = requests.post(
+                'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest', json=payload, headers=headers)
+            response.raise_for_status()
+            return response.json()
+        else:
+            return 'Access token not found'
+    except requests.RequestException as e:
+        return f'Error: {e}'
 
-# Define a function to simulate updating the product delivery status
 
-
-def update_product_delivery_status(transaction_id, status):
-    # This is a placeholder for updating delivery status in the database
-    # In a real scenario, this would involve updating a database record
-    transaction_details['product_received'] = status
-    return transaction_details
-
-# Define a function to simulate disbursing funds to the seller
-
-
-def disburse_funds_to_seller(seller_id, amount):
-    # This is a placeholder for disbursing funds using Safaricom Daraja B2C API
-    # In a real scenario, this would involve making an API call to Safaricom Daraja B2C
-    # Here we'll just print a message to simulate the disbursement
-    print(
-        f"Disbursing {amount} to seller with ID {seller_id} using Safaricom Daraja B2C")
-
-
-# Main process
-transaction_id = 'txn001'  # Example transaction ID
-transaction_details = get_transaction_details(transaction_id)
-
-# Check if the buyer has sent the amount
-if check_payment_status(transaction_details['buyer_id'], transaction_id):
-    # Update the product delivery status (assuming the product is received for simplicity)
-    transaction_details = update_product_delivery_status(transaction_id, True)
-
-    # Check if the product is received by the buyer
-    if transaction_details['product_received']:
-        # Compare the seller's ID in the database to the one identified
-        # For simplicity, we assume the seller's ID matches and proceed to disburse funds
-        disburse_funds_to_seller(
-            transaction_details['seller_id'], transaction_details['amount'])
-    else:
-        print("Product not received by the buyer yet.")
-else:
-    print("Payment not received from the buyer.")
-
-# Please note that this code is for demonstration purposes only and does not perform actual transactions.
+def get_access_token():
+    consumer_key = 'PKreMGJ7wTszUSnPOnZJcdPQEUbBcNDcCYu9IOqvqdYHrIbr'
+    consumer_secret = '3UOS9ruBBQqK5qJrSxSKdos8JzdMXU1kAZEuUOUuDByn2LBXeODVyNqJGUVRXJT0'
+    mpesa_auth_url = 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
+    try:
+        data = requests.get(mpesa_auth_url, auth=HTTPBasicAuth(
+            consumer_key, consumer_secret))
+        data.raise_for_status()
+        dict_data = data.json()
+        print(dict_data.get('access_token'))
+        return dict_data.get('access_token')
+    except requests.RequestException as e:
+        print(f'Error: {e}')
+        return None

@@ -19,27 +19,30 @@
                 <a onclick="myFunction()" class="dropdown" href="#!">All categories <i
                         class="bi bi-chevron-down"></i></a>
                 <ul id="myDropdown" class="dropdown-content">
-                    <li><a href="#">All Products</a></li>
+                    <li><a href="{{ url_for('index') }}">All Products</a></li>
                     <li>
                         <hr class="dropdown-divider" />
                     </li>
-                    <li><a href="#!">Books</a></li>
-                    <li><a href="#!">Electronics</a></li>
-                    <li><a href="#!">Furniture</a></li>
-                    <li><a href="#!">Clothing</a></li>
-                    <li><a href="#!">Services</a></li>
-                    <li><a href="#!">Beauty and personal effects</a></li>
+                    <li><a href="{{ url_for('filter_products', category='Books') }}">Books</a></li>
+                    <li><a href="{{ url_for('filter_products', category='Electronics') }}">Electronics</a></li>
+                    <li><a href="{{ url_for('filter_products', category='Furniture') }}">Furniture</a></li>
+                    <li><a href="{{ url_for('filter_products', category='Clothing') }}">Clothing</a></li>
+                    <li><a href="{{ url_for('filter_products', category='Services') }}">Services</a></li>
+                    <li><a href="{{ url_for('filter_products', category='Beauty and personal effects') }}">Beauty and personal effects</a></li>
                 </ul>
             </li>
-            <input type="search" class="form-control" placeholder="Search...">
+            <form action="{{ url_for('search_products') }}" method="post">
+                <input type="search" name="search_query" class="form-control" placeholder="Search...">
+                <button type="submit">Search</button>
+            </form>
 
             <a href="{{ url_for('seller_register') }}">Seller?</a>
 
-            <a href="{{url_for('favourites')}}"><button class="nav-btn" type="submit">
+            <!-- <a href="{{url_for('favourites')}}"><button class="nav-btn" type="submit">
                     <i class="bi bi-heart-fill me-1"></i>
                     favourites
                     <span class="badge bg-dark text-white ms-1 rounded-pill">0</span>
-           </button> </a>
+           </button> </a> -->
             <a href="{{url_for('cart')}}"><button class="nav-btn" type="submit">
                     <i class="bi-cart-fill me-1"></i>
                     cart

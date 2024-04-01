@@ -20,15 +20,6 @@
     border: 1px solid #f5c6cb;
 }
 </style>
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-    {% for category, message in messages %}
-        <div class="alert alert-{{ category }}">
-            {{ message }}
-        </div>
-    {% endfor %}
-{% endif %}
-{% endwith %}
 <main>
     <div class="product-container">
       <div class="product-wrapper">
@@ -40,7 +31,7 @@
             <p>Quantity: {{product.available_units}}</p>
           </div>
           <div class="product-actions">
-            <button class="add-to-cart favourite-btn" data-product-id="{{ product.product_id }}">Mark as favourite</button>
+            <!-- <button class="add-to-cart favourite-btn" data-product-id="{{ product.product_id }}">Mark as favourite</button> -->
             <button class="add-to-cart cart-btn" data-product-id="{{ product.product_id }}">Add To Cart</button>
           </div>
           <div class="product-description">
@@ -61,26 +52,6 @@
     </div>
   </main>
   <script>
-    // JavaScript for handling flashed messages
-document.addEventListener('DOMContentLoaded', function() {
-    // Get all flashed message elements
-    var flashedMessages = document.querySelectorAll('.flashed-message');
-
-    // Loop through each flashed message element
-    flashedMessages.forEach(function(message) {
-        // Add event listener to close the message when clicked
-        message.addEventListener('click', function() {
-            message.style.display = 'none'; // Hide the message
-        });
-
-        // Automatically hide the message after a certain period (e.g., 5 seconds)
-        setTimeout(function() {
-            message.style.display = 'none'; // Hide the message
-        }, 5000); // Adjust the timeout value as needed
-    });
-});
-
-    // Add event listeners for Add to Cart and Mark as Favourite buttons
     document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.cart-btn').forEach(function(button) {
             button.addEventListener('click', function(event) {
@@ -99,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Function to handle adding product to cart
+
     function addToCart(productId) {
         fetch('/add_to_cart', {
             method: 'POST',
@@ -111,19 +82,17 @@ document.addEventListener('DOMContentLoaded', function() {
             })
         }).then(response => {
             if (response.ok) {
-                // If successful, display success message
-                showAlertMessage('Product added to cart successfully.', 'success');
+
             } else {
-                // If error, display error message
-                showAlertMessage('Failed to add product to cart.', 'error');
+
             }
         }).catch(error => {
             console.error('Error:', error);
-            showAlertMessage('An error occurred while adding product to cart.', 'error');
+
         });
     }
 
-    // Function to handle adding product to favourites
+
     function addToFavorites(productId) {
         fetch('/add_to_favourites', {
             method: 'POST',
@@ -135,29 +104,14 @@ document.addEventListener('DOMContentLoaded', function() {
             })
         }).then(response => {
             if (response.ok) {
-                // If successful, display success message
-                showAlertMessage('Product added to favourites successfully.', 'success');
+
             } else {
-                // If error, display error message
-                showAlertMessage('Failed to add product to favourites.', 'error');
+
             }
         }).catch(error => {
             console.error('Error:', error);
-            showAlertMessage('An error occurred while adding product to favourites.', 'error');
+
         });
-    }
-
-    // Function to show alert messages dynamically
-    function showAlertMessage(message, type) {
-        var alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-' + type;
-        alertDiv.textContent = message;
-        document.body.appendChild(alertDiv);
-
-        // Remove the alert after a certain time
-        setTimeout(function() {
-            alertDiv.remove();
-        }, 3000);
     }
 </script>
 {%endblock%}
