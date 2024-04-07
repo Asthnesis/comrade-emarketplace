@@ -317,90 +317,6 @@ def cart():
         return 'Error fetching cart items: {}'.format(str(e)), 'error'
 
 
-@app.route('/add_to_favourites', methods=['POST'])
-def add_to_favourites():
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'message': 'User not logged in'})
-
-    user_id = session['user_id']
-    product_id = request.json.get('product_id')
-
-    if not product_id:
-        return jsonify({'success': False, 'message': 'Product ID not provided'})
-
-    try:
-        with connection.cursor() as cursor:
-            # Check if the product is already in the favorites
-            sql = "SELECT COUNT(*) AS count FROM favourites WHERE user_id = %s AND product_id = %s"
-            cursor.execute(sql, (user_id, product_id))
-            result = cursor.fetchone()
-
-            if result['count'] > 0:
-                return jsonify({'success': False, 'message': 'Product already in favorites'})
-
-            # Add the product to the favorites
-            sql = "INSERT INTO favourites (user_id, product_id) VALUES (%s, %s)"
-            cursor.execute(sql, (user_id, product_id))
-            connection.commit()
-
-            return jsonify({'success': True, 'message': 'Product added to favorites successfully'})
-    except Exception as e:
-        print("Error:", e)
-        return jsonify({'success': False, 'message': 'An error occurred while processing the request'}), 500
-
-
-@app.route('/seller_dashboard', methods=['GET', 'POST'])
-def seller_dashboard():
-    if 'seller_id' not in session:
-        return redirect(url_for('seller_login'))
-
-    if request.method == 'GET':
-        try:
-            user_id = session['user_id']
-            with connection.cursor() as cursor:
-                sql = "SELECT u.*, b.buyer_id, s.seller_id FROM user_account u LEFT JOIN buyer b ON u.user_id = b.user_id LEFT JOIN seller s ON u.user_id = s.user_id WHERE u.user_id = %s"
-                cursor.execute(sql, (user_id,))
-                user_data = cursor.fetchone()
-
-            if user_data:
-                first_name = user_data['first_name']
-                last_name = user_data['last_name']
-                email = user_data['email']
-                buyer_id = user_data['buyer_id']
-                seller_id = user_data['seller_id']
-                cart_count = session.get('cart_count', 0)
-                seller_id = session['seller_id']
-                products = fetch_product_data_from_database(seller_id)
-                for product in products:
-                    if product['product_image'] is not None:
-                        product['product_image'] = base64.b64encode(
-                            product['product_image']).decode('utf-8')
-                return render_template('seller_dashboard.html', products=products, user_id=user_id, first_name=first_name, last_name=last_name, email=email, buyer_id=buyer_id, seller_id=seller_id, cart_count=cart_count)
-
-            else:
-                flash("User data not found.")
-                return "User data not found"
-
-        except pymysql.err.InterfaceError as e:
-            flash(f"Error connecting to database: {e}")
-            return redirect(url_for('login'))
-
-    elif request.method == 'POST':
-        if request.form.get('action') == 'delete':
-            product_id = request.form.get('product_id')
-            delete_product_from_database(product_id)
-        elif request.form.get('action') == 'edit':
-            # Add logic for editing products here
-            pass
-
-        return redirect(url_for('seller_dashboard'))
-
-
-@app.route('/favourites')
-def favourites():
-    return render_template('favourites.html')
-
-
 @app.route('/add_to_cart', methods=['POST'])
 def add_to_cart():
     if 'user_id' not in session:
@@ -448,6 +364,74 @@ def add_to_cart():
     except Exception as e:
         print("Error:", e)
         return jsonify({'success': False, 'message': 'An error occurred while processing the request'}), 500
+
+
+@app.route('/remove_from_cart/<string:product_id>', methods=['DELETE'])
+def remove_from_cart(product_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'You need to be logged in to remove items from your cart'}), 401
+
+    try:
+        user_id = session['user_id']
+
+        # Check if the product is in the cart
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "DELETE FROM cart WHERE user_id = %s AND product_id = %s", (user_id, product_id))
+            if cursor.rowcount > 0:
+                connection.commit()
+                return jsonify({'message': 'Product removed from cart successfully'}), 200
+            else:
+                return jsonify({'error': 'Product not found in cart'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/seller_dashboard', methods=['GET', 'POST'])
+def seller_dashboard():
+    if 'seller_id' not in session:
+        return redirect(url_for('seller_login'))
+
+    if request.method == 'GET':
+        try:
+            user_id = session['user_id']
+            with connection.cursor() as cursor:
+                sql = "SELECT u.*, b.buyer_id, s.seller_id FROM user_account u LEFT JOIN buyer b ON u.user_id = b.user_id LEFT JOIN seller s ON u.user_id = s.user_id WHERE u.user_id = %s"
+                cursor.execute(sql, (user_id,))
+                user_data = cursor.fetchone()
+
+            if user_data:
+                first_name = user_data['first_name']
+                last_name = user_data['last_name']
+                email = user_data['email']
+                buyer_id = user_data['buyer_id']
+                seller_id = user_data['seller_id']
+                cart_count = session.get('cart_count', 0)
+                seller_id = session['seller_id']
+                products = fetch_product_data_from_database(seller_id)
+                for product in products:
+                    if product['product_image'] is not None:
+                        product['product_image'] = base64.b64encode(
+                            product['product_image']).decode('utf-8')
+                return render_template('seller_dashboard.html', products=products, user_id=user_id, first_name=first_name, last_name=last_name, email=email, buyer_id=buyer_id, seller_id=seller_id, cart_count=cart_count)
+
+            else:
+                flash("User data not found.")
+                return "User data not found"
+
+        except pymysql.err.InterfaceError as e:
+            flash(f"Error connecting to database: {e}")
+            return redirect(url_for('login'))
+
+    elif request.method == 'POST':
+        if request.form.get('action') == 'delete':
+            product_id = request.form.get('product_id')
+            delete_product_from_database(product_id)
+        elif request.form.get('action') == 'edit':
+            # Add logic for editing products here
+            pass
+
+        return redirect(url_for('seller_dashboard'))
 
 
 def update_cart_count():
@@ -645,7 +629,7 @@ def authorize():
                 else:
                     return redirect(url_for('register'))
             except pymysql.Error as e:
-                print("Error executing SQL query:", e)
+                return "Error executing SQL query:", e
     else:
         return "User information incomplete"
 

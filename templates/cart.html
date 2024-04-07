@@ -111,13 +111,7 @@ h1 {
     </div>
     <div class="quantity-control">
       <div class="remove-btn">
-        <button>Remove</button>
-      </div>
-      <div class="count-buttons">
-        <button>-</button>
-        <span>{{ item.quantity }}</span>
-        <button>+</button>
-      </div>
+        <button onclick="removeFromCart('{{item.product_id}}')">Remove</button>
     </div>
   </section>
   {% endfor %}
@@ -132,46 +126,28 @@ h1 {
   </section>
 </div>
 </main>
+
+<script>
+  function removeFromCart(productId) {
+      fetch(`/remove_from_cart/${productId}`, {
+          method: 'DELETE',
+          headers: {
+              'Content-Type': 'application/json'
+          }
+      }).then(response => {
+          if (response.ok) {
+            
+          } else {
+              console.error('Error removing item from cart');
+          }
+      }).catch(error => {
+          console.error('Error:', error);
+      });
+  }
+</script>
 {% endblock %}
 
 
 
-
-
-<script>
-        function removeFromCart(productId) {
-    fetch(`/remove_from_cart/${productId}`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    }).then(response => {
-        if (response.ok) {
-            // Reload the page or update the cart UI
-        } else {
-            console.error('Error removing item from cart');
-        }
-    }).catch(error => {
-        console.error('Error:', error);
-    });
-}
-
-function incrementCount(productId) {
-    fetch(`/increment_count/${productId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    }).then(response => {
-        if (response.ok) {
-            // Reload the page or update the cart UI
-        } else {
-            console.error('Error incrementing count');
-        }
-    }).catch(error => {
-        console.error('Error:', error);
-    });
-}
-    </script> 
 
 

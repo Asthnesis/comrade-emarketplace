@@ -145,8 +145,8 @@ body {
             <div class="checkout-section">
                 <div class="section-title">PAYMENT METHOD</div>
                 <div class="hr-separator"></div>
-                <form action="/payment" method="post" class="details">
-                    <input type="radio" id="credit-card" name="payment-method" value="credit-card">
+                <form id="payment-form" class="details">
+                    <input type="radio" id="credit-card" name="payment-method" value="mpesa">
                     <label for="credit-card">M-Pesa</label>
                     <div class="hr-separator"></div>
                     <input type="radio" id="cash" name="payment-method" value="cash">
@@ -154,10 +154,8 @@ body {
                 </form>
             </div>
             <div class="button-section">
-                <a href="{{url_for('initiate_payment')}}" class="btn btn-primary">CONFIRM ORDER</a>
+                <button id="confirm-order-btn" class="btn btn-primary">CONFIRM ORDER</button>
             </div>
-        </div>
-
         <div class="order-summary">
             <h2>Order Summary</h2>
             <div class="hr-separator"></div>
@@ -167,3 +165,22 @@ body {
     </div>
     <a href="{{url_for('index')}}" class="btn btn-secondary">Go back & continue shopping</a>
 </body>
+            
+<script>
+    document.getElementById("confirm-order-btn").addEventListener("click", function(event) {
+        event.preventDefault();
+
+        var selectedPaymentMethod = document.querySelector('input[name="payment-method"]:checked');
+
+        if (!selectedPaymentMethod) {
+            alert("Please select a payment method");
+            return;
+        }
+
+        if (selectedPaymentMethod.value === "cash") {
+            alert("Success");
+        } else if (selectedPaymentMethod.value === "mpesa") {
+            window.location.href = "{{url_for('initiate_payment')}}";
+        }
+    });
+</script>
