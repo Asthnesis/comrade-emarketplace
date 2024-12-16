@@ -11,7 +11,6 @@ def initiate_payment():
     try:
         access_token = get_access_token()
         if access_token:
-            # Replace these placeholders with actual data
             payload = {
                 "BusinessShortCode": "174379",
                 "Password": "Safaricom999!*!",
